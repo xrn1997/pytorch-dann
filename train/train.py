@@ -92,7 +92,6 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
                     domain_loss.item()
                 ))
 
-
         elif training_mode == 'source':
             # prepare the data
             input1, label1 = sdata
@@ -105,7 +104,8 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
                 input1, label1 = Variable(input1), Variable(label1)
 
             # setup optimizer
-            optimizer = optim.SGD(list(feature_extractor.parameters())+list(class_classifier.parameters()), lr=0.01, momentum=0.9)
+            optimizer = optim.SGD(list(feature_extractor.parameters()) + list(class_classifier.parameters()), lr=0.01,
+                                  momentum=0.9)
             optimizer.zero_grad()
 
             # compute the output of source domain and target domain

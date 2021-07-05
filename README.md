@@ -8,6 +8,9 @@
 
 ### requirements
 > python3.6.2  
+>
+> 执行这句话之前，需要下载数据集，在data文件夹中新建MNIST_M文件夹，并将数据集解压到MNIST_M文件夹中
+>
 > `pip install -r requirements.txt`
 
 ### Data

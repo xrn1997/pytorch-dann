@@ -1,18 +1,14 @@
-import torchvision
-import torch
-from torch.utils.data import DataLoader
-from torchvision import datasets, transforms
-
-from train import params
-from sklearn.manifold import TSNE
-
-
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')
-
+import torch
+import torchvision
 import numpy as np
 import os, time
+from torch.utils.data import DataLoader
+from torchvision import datasets, transforms
 from data import SynDig
+from train import params
+
+plt.switch_backend('agg')
 
 
 def get_train_loader(dataset):
@@ -23,56 +19,68 @@ def get_train_loader(dataset):
     if dataset == 'MNIST':
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = datasets.MNIST(root= params.mnist_path, train= True, transform= transform,
-                              download= True)
+        data = datasets.MNIST(root=params.mnist_path, train=True, transform=transform,
+                              download=True)
 
-        dataloader = DataLoader(dataset= data, batch_size= params.batch_size, shuffle= True)
-
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=2,
+                                pin_memory=True)
 
     elif dataset == 'MNIST_M':
-        transform = transforms.Compose([
-            transforms.RandomCrop((28)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
-        ])
-
-        data = datasets.ImageFolder(root=params.mnistm_path + '/train', transform= transform)
-
-        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
-
-    elif dataset == 'SVHN':
         transform = transforms.Compose([
             transforms.RandomCrop((28)),
             transforms.ToTensor(),
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
+        data = datasets.ImageFolder(root=params.mnistm_path + '/train', transform=transform)
+
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=2,
+                                pin_memory=True)
+
+    elif dataset == 'SVHN':
+        transform = transforms.Compose([
+            transforms.RandomCrop(28),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
         data1 = datasets.SVHN(root=params.svhn_path, split='train', transform=transform, download=True)
-        data2 = datasets.SVHN(root= params.svhn_path, split= 'extra', transform = transform, download= True)
+        data2 = datasets.SVHN(root=params.svhn_path, split='extra', transform=transform, download=True)
 
         data = torch.utils.data.ConcatDataset((data1, data2))
 
-        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=2,
+                                pin_memory=True)
     elif dataset == 'SynDig':
         transform = transforms.Compose([
-            transforms.RandomCrop((28)),
+            transforms.RandomCrop(28),
             transforms.ToTensor(),
-            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = SynDig.SynDig(root= params.syndig_path, split= 'train', transform= transform, download= False)
+        data = SynDig.SynDig(root=params.syndig_path, split='train', transform=transform, download=True)
 
-        dataloader = DataLoader(dataset = data, batch_size= params.batch_size, shuffle= True)
-
-
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=2,
+                                pin_memory=True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
     return dataloader
-
 
 
 def get_test_loader(dataset):
@@ -83,49 +91,48 @@ def get_test_loader(dataset):
     if dataset == 'MNIST':
         transform = transforms.Compose([
             transforms.ToTensor(),
-            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = datasets.MNIST(root= params.mnist_path, train= False, transform= transform,
-                              download= True)
+        data = datasets.MNIST(root=params.mnist_path, train=False, transform=transform,
+                              download=True)
 
-        dataloader = DataLoader(dataset= data, batch_size= 1, shuffle= False)
+        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             # transforms.RandomCrop((28)),
-            transforms.CenterCrop((28)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean= params.dataset_mean, std= params.dataset_std)
-        ])
-
-        data = datasets.ImageFolder(root=params.mnistm_path + '/test', transform= transform)
-
-        dataloader = DataLoader(dataset = data, batch_size= 1, shuffle= False)
-    elif dataset == 'SVHN':
-        transform = transforms.Compose([
-            transforms.CenterCrop((28)),
-            transforms.ToTensor(),
-            transforms.Normalize(mean= params.dataset_mean, std = params.dataset_std)
-        ])
-
-        data = datasets.SVHN(root= params.svhn_path, split= 'test', transform = transform, download= True)
-
-        dataloader = DataLoader(dataset = data, batch_size= 1, shuffle= False)
-    elif dataset == 'SynDig':
-        transform = transforms.Compose([
-            transforms.CenterCrop((28)),
+            transforms.CenterCrop(28),
             transforms.ToTensor(),
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = SynDig.SynDig(root= params.syndig_path, split= 'test', transform= transform, download= False)
+        data = datasets.ImageFolder(root=params.mnistm_path + '/test', transform=transform)
 
-        dataloader = DataLoader(dataset= data, batch_size= 1, shuffle= False)
+        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
+    elif dataset == 'SVHN':
+        transform = transforms.Compose([
+            transforms.CenterCrop(28),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
+        data = datasets.SVHN(root=params.svhn_path, split='test', transform=transform, download=True)
+
+        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
+    elif dataset == 'SynDig':
+        transform = transforms.Compose([
+            transforms.CenterCrop(28),
+            transforms.ToTensor(),
+            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
+        ])
+
+        data = SynDig.SynDig(root=params.syndig_path, split='test', transform=transform, download=True)
+
+        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
     return dataloader
-
 
 
 def optimizer_scheduler(optimizer, p):
@@ -139,7 +146,6 @@ def optimizer_scheduler(optimizer, p):
         param_group['lr'] = 0.01 / (1. + 10 * p) ** 0.75
 
     return optimizer
-
 
 
 def displayImages(dataloader, length=8, imgName=None):
@@ -161,12 +167,10 @@ def displayImages(dataloader, length=8, imgName=None):
     images = images[:length]
 
     images = torchvision.utils.make_grid(images).numpy()
-    images = images/2 + 0.5
+    images = images / 2 + 0.5
     images = np.transpose(images, (1, 2, 0))
 
-
     if params.fig_mode == 'display':
-
         plt.imshow(images)
         plt.show()
 
@@ -180,7 +184,6 @@ def displayImages(dataloader, length=8, imgName=None):
         if imgName is None:
             imgName = 'displayImages' + str(int(time.time()))
 
-
         # Check extension in case.
         if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
             imgName = os.path.join(folder, imgName + '.jpg')
@@ -190,8 +193,6 @@ def displayImages(dataloader, length=8, imgName=None):
 
     # print labels
     print(' '.join('%5s' % labels[j].item() for j in range(length)))
-
-
 
 
 def plot_embedding(X, y, d, title=None, imgName=None):
@@ -214,13 +215,13 @@ def plot_embedding(X, y, d, title=None, imgName=None):
     X = (X - x_min) / (x_max - x_min)
 
     # Plot colors numbers
-    plt.figure(figsize=(10,10))
+    plt.figure(figsize=(10, 10))
     ax = plt.subplot(111)
 
     for i in range(X.shape[0]):
         # plot colored number
         plt.text(X[i, 0], X[i, 1], str(y[i]),
-                 color=plt.cm.bwr(d[i]/1.),
+                 color=plt.cm.bwr(d[i] / 1.),
                  fontdict={'weight': 'bold', 'size': 9})
 
     plt.xticks([]), plt.yticks([])

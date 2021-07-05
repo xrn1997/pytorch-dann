@@ -2,12 +2,14 @@ from models import models
 
 # utility params
 fig_mode = None
-embed_plot_epoch=10
+embed_plot_epoch = 10
 
 # model params
 use_gpu = True
-dataset_mean = (0.5, 0.5, 0.5)
-dataset_std = (0.5, 0.5, 0.5)
+# dataset_mean = (0.5, 0.5, 0.5) 报错
+# dataset_std = (0.5, 0.5, 0.5) 报错
+dataset_mean = 0.5
+dataset_std = 0.5
 
 batch_size = 512
 epochs = 1000
@@ -23,7 +25,6 @@ svhn_path = data_root + '/SVHN'
 syndig_path = data_root + '/SynthDigits'
 
 save_dir = './experiment'
-
 
 # specific dataset params
 extractor_dict = {'MNIST_MNIST_M': models.Extractor(),

@@ -4,10 +4,12 @@ import torch.nn.functional as F
 from torch.autograd import Variable
 import torch.nn.init as init
 
+
 class GradReverse(torch.autograd.Function):
     """
     Extension of grad reverse layer
     """
+
     @staticmethod
     def forward(ctx, x, constant):
         ctx.constant = constant
@@ -20,6 +22,7 @@ class GradReverse(torch.autograd.Function):
 
     def grad_reverse(x, constant):
         return GradReverse.apply(x, constant)
+
 
 class Extractor(nn.Module):
 
@@ -43,6 +46,7 @@ class Extractor(nn.Module):
         x = x.view(-1, 48 * 4 * 4)
 
         return x
+
 
 class Class_classifier(nn.Module):
 
@@ -69,6 +73,7 @@ class Class_classifier(nn.Module):
 
         return F.log_softmax(logits, 1)
 
+
 class Domain_classifier(nn.Module):
 
     def __init__(self):
@@ -89,16 +94,15 @@ class Domain_classifier(nn.Module):
         return logits
 
 
-
 class SVHN_Extractor(nn.Module):
 
     def __init__(self):
         super(SVHN_Extractor, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size= 5)
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=5)
         self.bn1 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 64, kernel_size= 5)
+        self.conv2 = nn.Conv2d(64, 64, kernel_size=5)
         self.bn2 = nn.BatchNorm2d(64)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size= 5, padding= 2)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=5, padding=2)
         self.bn3 = nn.BatchNorm2d(128)
         self.conv3_drop = nn.Dropout2d()
         self.init_params()
@@ -107,7 +111,7 @@ class SVHN_Extractor(nn.Module):
 
         for m in self.modules():
             if isinstance(m, nn.Conv2d):
-                init.kaiming_normal_(m.weight, mode= 'fan_out')
+                init.kaiming_normal_(m.weight, mode='fan_out')
                 if m.bias is not None:
                     init.constant_(m.bias, 0)
             if isinstance(m, nn.BatchNorm2d):
@@ -124,6 +128,7 @@ class SVHN_Extractor(nn.Module):
         x = self.conv3_drop(x)
 
         return x.view(-1, 128 * 3 * 3)
+
 
 class SVHN_Class_classifier(nn.Module):
 
@@ -142,6 +147,7 @@ class SVHN_Class_classifier(nn.Module):
         logits = self.fc3(logits)
 
         return F.log_softmax(logits, 1)
+
 
 class SVHN_Domain_classifier(nn.Module):
 

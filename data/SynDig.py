@@ -9,21 +9,20 @@ import numpy as np
 
 
 class SynDig(data.Dataset):
-
     url = 'https://doc-08-a8-docs.googleusercontent.com/docs/securesc/4gco78h4r5v7n2eq50hcumr89oar2vtn/' \
           'j64h6ekj56csgpnthf6revr2h1sogunh/1513591200000/02005382952228186512/07954859324473388693/' \
           '0B9Z4d7lAwbnTSVR1dEFSRUFxOUU?e=download&nonce=i254fkf8136em&user=' \
           '07954859324473388693&hash=cbcagg6svrku8ot6c9e27m3saorf50m1'
-    zipname = 'SynDigits.zip'
+    zip_name = 'SynDigits.zip'
     split_list = {
         'train': ["synth_train_32x32.mat"],
         'train_small': ["synth_train_32x32_small.mat"],
-        'test': ["synth_test_32x32.mat",""],
+        'test': ["synth_test_32x32.mat", ""],
         'test_small': ["synth_test_32x32_small.mat"]
     }
 
-    def __init__(self, root, split= 'train', transform= None,
-                 target_transform= None, download= False):
+    def __init__(self, root, split='train', transform=None,
+                 target_transform=None, download=False):
         self.root = root
         self.transform = transform
         self.target_transform = target_transform
@@ -40,7 +39,6 @@ class SynDig(data.Dataset):
         if not self._check_exists():
             raise RuntimeError('Dataset not found.' +
                                'You can use download=True to download it.')
-
 
         import scipy.io as sio
 
@@ -70,10 +68,9 @@ class SynDig(data.Dataset):
     def _check_exists(self):
         return os.path.exists(os.path.join(self.root, self.filename))
 
-
     def download(self):
         """Download dataset."""
-        filename = os.path.join(self.root, self.zipname)
+        filename = os.path.join(self.root, self.zip_name)
         dirname = os.path.dirname(filename)
         if not os.path.isdir(dirname):
             os.makedirs(dirname)
