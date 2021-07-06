@@ -1,19 +1,19 @@
-import matplotlib.pyplot as plt
-import torch
-import torchvision
-import numpy as np
-import os, time
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
 from data import SynDig
 from train import params
-
-plt.switch_backend('agg')
+import torch
+import torchvision
+import numpy as np
+import os, time
+import matplotlib.pyplot as plt
+plt.switch_backend('agg')  # agg不显示图片
 
 
 def get_train_loader(dataset):
     """
     Get train dataloader of source domain or target domain
+
     :return: dataloader
     """
     if dataset == 'MNIST':
@@ -26,14 +26,22 @@ def get_train_loader(dataset):
                               download=True)
 
         dataloader = DataLoader(dataset=data,
-                                batch_size=params.batch_size,
-                                shuffle=True,
-                                num_workers=2,
+                                batch_size=params.batch_size, # 每次处理的batch大小
+                                shuffle=True,  # shuffle的作用是乱序，先顺序读取，再乱序索引。
+                                num_workers=2,  # 线程数
                                 pin_memory=True)
+        '''
+      pin_memory就是锁页内存。
+      创建DataLoader时，设置pin_memory=True，则意味着生成的Tensor数据最开始是属于内存中的锁页内存，这样将内存的Tensor转义到GPU的显存就会更快一些。
+      主机中的内存，有两种存在方式，一是锁页，二是不锁页，锁页内存存放的内容在任何情况下都不会与主机的虚拟内存进行交换（注：虚拟内存就是硬盘），
+      而不锁页内存在主机内存不足时，数据会存放在虚拟内存中。显卡中的显存全部是锁页内存,当计算机的内存充足的时候，可以设置pin_memory=True。
+      当系统卡住，或者交换内存使用过多的时候，设置pin_memory=False。因为pin_memory与电脑硬件性能有关，pytorch开发者不能确保每一个炼丹玩家都有高端设备，
+      因此pin_memory默认为False。
+      '''
 
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
-            transforms.RandomCrop((28)),
+            transforms.RandomCrop(28),
             transforms.ToTensor(),
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
@@ -86,6 +94,7 @@ def get_train_loader(dataset):
 def get_test_loader(dataset):
     """
     Get test dataloader of source domain or target domain
+
     :return: dataloader
     """
     if dataset == 'MNIST':
@@ -97,7 +106,7 @@ def get_test_loader(dataset):
         data = datasets.MNIST(root=params.mnist_path, train=False, transform=transform,
                               download=True)
 
-        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
+        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             # transforms.RandomCrop((28)),
@@ -108,7 +117,7 @@ def get_test_loader(dataset):
 
         data = datasets.ImageFolder(root=params.mnist_m_path + '/test', transform=transform)
 
-        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
+        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
     elif dataset == 'SVHN':
         transform = transforms.Compose([
             transforms.CenterCrop(28),
@@ -118,7 +127,7 @@ def get_test_loader(dataset):
 
         data = datasets.SVHN(root=params.svhn_path, split='test', transform=transform, download=True)
 
-        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
+        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
     elif dataset == 'SynDig':
         transform = transforms.Compose([
             transforms.CenterCrop(28),
@@ -128,7 +137,7 @@ def get_test_loader(dataset):
 
         data = SynDig.SynDig(root=params.synth_path, split='test', transform=transform, is_download=True)
 
-        dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
+        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
@@ -138,6 +147,7 @@ def get_test_loader(dataset):
 def optimizer_scheduler(optimizer, p):
     """
     Adjust the learning rate of optimizer
+
     :param optimizer: optimizer for updating parameters
     :param p: a variable for adjusting learning rate
     :return: optimizer
@@ -148,9 +158,10 @@ def optimizer_scheduler(optimizer, p):
     return optimizer
 
 
-def displayImages(dataloader, length=8, img_name=None):
+def display_images(dataloader, length=8, img_name=None):
     """
     Randomly sample some images and display
+
     :param dataloader: maybe train dataloader or test dataloader
     :param length: number of images to be displayed
     :param img_name: the name of saving image
@@ -161,8 +172,7 @@ def displayImages(dataloader, length=8, img_name=None):
 
     # randomly sample some images.
     data_iter = iter(dataloader)
-    images, labels = data_iter.next()
-
+    images, labels = next(data_iter) # next dataloader 的默认大小就是batch_size的大小
     # process images so they can be displayed.
     images = images[:length]
 

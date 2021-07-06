@@ -21,12 +21,12 @@ def mk_dirs(path):
             os.mkdir(test_dir + '/' + str(i))
 
 
-def process(labels_path, images_path, data_dir):
+def process(labels_path, images_path, data_path):
     with open(labels_path) as f:
         for line in f.readlines():
             img = images_path + '/' + line.split()[0]
-            dir = data_dir + '/' + line.split()[1]
-            shutil.move(img, dir)
+            path = data_path + '/' + line.split()[1]
+            shutil.move(img, path)
 
 
 mk_dirs(data_dir)

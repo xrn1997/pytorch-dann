@@ -1,10 +1,8 @@
-import torch
 from torch.autograd import Variable
-import numpy as np
-
 from train import params
 from util import utils
-
+import torch
+import numpy as np
 import torch.optim as optim
 
 
@@ -12,6 +10,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
           source_dataloader, target_dataloader, optimizer, epoch):
     """
     Execute target domain adaptation
+
     :param training_mode:
     :param feature_extractor:
     :param class_classifier:
@@ -21,6 +20,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
     :param source_dataloader:
     :param target_dataloader:
     :param optimizer:
+    :param epoch:
     :return:
     """
 

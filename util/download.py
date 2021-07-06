@@ -7,9 +7,12 @@ import requests
 
 def download(url, path):
     """
-    下载github文件
-    :param url 下载地址
-    :param path 存储路径，没有文件夹会自动创建文件夹
+    下载github文件。
+    代码存在问题，需要修复。
+
+    :param url: download address
+    :param path: storage path
+
     """
     if not os.path.exists(path):  # 看是否有该文件夹，没有则创建文件夹
         os.mkdir(path)
@@ -39,7 +42,3 @@ def download(url, path):
         print("下载成功")
     return
 
-
-response = requests.get('https://raw.githubusercontent.com/domainadaptation/datasets/master/synth/synth_train_32x32.mat',
-                        stream=True)  # stream=True必须写上
-print(response.text)

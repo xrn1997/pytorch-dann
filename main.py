@@ -109,14 +109,9 @@ def main(args):
     params.training_mode = args.training_mode
     params.source_domain = args.source_domain
     params.target_domain = args.target_domain
-    if params.embed_plot_epoch is None:
-        params.embed_plot_epoch = args.embed_plot_epoch
-    params.lr = args.lr
-
-    if args.save_dir is not None:
-        params.save_dir = args.save_dir
-    else:
-        print('Figures will be saved in ./experiment folder.')
+    params.embed_plot_epoch = args.embed_plot_epoch
+    params.learning_rate = args.lr
+    params.save_dir = args.save_dir
 
     # prepare the source data and target data
 
@@ -125,13 +120,12 @@ def main(args):
     tgt_train_dataloader = utils.get_train_loader(params.target_domain)
     tgt_test_dataloader = utils.get_test_loader(params.target_domain)
 
+    # 如果fig_mode不为空，会在save_dir中保存前8个（默认）图片，保存为1张。
     if params.fig_mode is not None:
         print('Images from training on source domain:')
-
-        utils.displayImages(src_train_dataloader, img_name='source')
-
+        utils.display_images(src_train_dataloader, img_name='source')
         print('Images from test on target domain:')
-        utils.displayImages(tgt_test_dataloader, img_name='target')
+        utils.display_images(tgt_test_dataloader, img_name='target')
 
     # init models
     model_index = params.source_domain + '_' + params.target_domain
@@ -151,7 +145,7 @@ def main(args):
     # init optimizer
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},
                                  {'params': class_classifier.parameters()},
-                                 {'params': domain_classifier.parameters()}], lr=params.lr, momentum=0.9)
+                                 {'params': domain_classifier.parameters()}], lr=params.learning_rate, momentum=0.9)
 
     for epoch in range(params.epochs):
         print('Epoch: {}'.format(epoch))
@@ -167,41 +161,33 @@ def main(args):
 
 
 def parse_arguments(argv):
-    """Command line parse.
-        name or flags - 选项字符串的名字或者列表，例如 foo 或者 -f, --foo。
-        action - 命令行遇到参数时的动作，默认值是 store。
-            store_const，表示赋值为const；
-            append，将遇到的值存储成列表，也就是如果参数重复则会保存多个值;
-            append_const，将参数规范中定义的一个值保存到一个列表；
-            count，存储遇到的次数；此外，也可以继承 argparse.Action 自定义参数解析；
-        nargs - 应该读取的命令行参数个数，可以是具体的数字，或者是?号，当不指定值时对于 Positional argument 使用 default，
-            对于 Optional argument 使用 const；或者是 * 号，表示 0 或多个参数；或者是 + 号表示 1 或多个参数。
-        const - action 和 nargs 所需要的常量值。
-        default - 不指定参数时的默认值。
-        type - 命令行参数应该被转换成的类型。
-        choices - 参数可允许的值的一个容器。
-        required - 可选参数是否可以省略 (仅针对可选参数)。
-        help - 参数的帮助信息，当指定为 argparse.SUPPRESS 时表示不显示该参数的帮助信息.
-        metavar - 在 usage 说明中的参数名称，对于必选参数默认就是参数名称，对于可选参数默认是全大写的参数名称.
-        dest - 解析后的参数名称，默认情况下，对于可选参数选取最长的名称，中划线转换为下划线
+    """
+    执行参数 \r\n
+    更多提示请执行 \r\n
+    python main.py -h
+
+    :param argv: arguments
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--source_domain', type=str, default='MNIST', help='Choose source domain.')
+    parser.add_argument('--source_domain', type=str, default=params.source_domain, help='Choose source domain. 选择源域。')
 
-    parser.add_argument('--target_domain', type=str, default='MNIST_M', help='Choose target domain.')
+    parser.add_argument('--target_domain', type=str, default=params.target_domain, help='Choose target domain. 选择目标域。')
 
-    parser.add_argument('--fig_mode', type=str, default=None, help='Plot experiment figures.')
+    parser.add_argument('--fig_mode', type=str, default=params.fig_mode, help='Plot experiment '
+                                                                              'figures.有两个选项，一是save，二是display（不保存）。')
 
-    parser.add_argument('--save_dir', type=str, default=None, help='Path to save plotted images.')
+    parser.add_argument('--save_dir', type=str, default=params.save_dir, help='Path to save plotted images. ')
 
-    parser.add_argument('--training_mode', type=str, default='dann', help='Choose a mode to train the model.')
+    parser.add_argument('--training_mode', type=str, default=params.training_mode, help='Choose a mode to train the '
+                                                                                        'model. 训练模型')
 
-    parser.add_argument('--max_epoch', type=int, default=100, help='The max number of epochs.')
+    parser.add_argument('--max_epoch', type=int, default=params.epochs, help='The max number of epochs.最大训练轮数。')
 
-    parser.add_argument('--embed_plot_epoch', type=int, default=100, help='Epoch number of plotting embeddings.')
+    parser.add_argument('--embed_plot_epoch', type=int, default=params.embed_plot_epoch, help='Epoch number of '
+                                                                                              'plotting embeddings.')
 
-    parser.add_argument('--lr', type=float, default=0.01, help='Learning rate.')
+    parser.add_argument('--lr', type=float, default=params.learning_rate, help='Learning rate. 学习率。')
 
     return parser.parse_args()
 
