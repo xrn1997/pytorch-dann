@@ -20,11 +20,11 @@ theta = 1
 data_root = './data'
 
 mnist_path = data_root + '/MNIST'
-mnistm_path = data_root + '/MNIST_M'
+mnist_m_path = data_root + '/MNIST_M'
 svhn_path = data_root + '/SVHN'
-syndig_path = data_root + '/SynthDigits'
+synth_path = data_root + '/SynthDigits'
 
-save_dir = './experiment'
+save_dir = '../experiment'
 
 # specific dataset params
 extractor_dict = {'MNIST_MNIST_M': models.Extractor(),

@@ -1,13 +1,13 @@
 import os, shutil
 
 data_dir = '../data/MNIST_M'
-train_labels = '../data/MNIST_M/mnist_m_train_labels.txt'
-test_labels = '../data/MNIST_M/mnist_m_test_labels.txt'
-train_images = '../data/MNIST_M/mnist_m_train'
-test_images = '../data/MNIST_M/mnist_m_test'
+train_labels = data_dir + '/mnist_m_train_labels.txt'
+test_labels = data_dir + '/mnist_m_test_labels.txt'
+train_images = data_dir + '/mnist_m_train'
+test_images = data_dir + '/mnist_m_test'
 
 
-def mkdirs(path):
+def mk_dirs(path):
     train_dir = path + '/' + 'train'
     test_dir = path + '/' + 'test'
     if not os.path.exists(train_dir):
@@ -29,7 +29,7 @@ def process(labels_path, images_path, data_dir):
             shutil.move(img, dir)
 
 
-mkdirs(data_dir)
+mk_dirs(data_dir)
 process(train_labels, train_images, data_dir + '/train')
 process(test_labels, test_images, data_dir + '/test')
 os.remove(train_images)

@@ -7,23 +7,25 @@
 > version, you can see [tf-dann][2].
 
 ### requirements
-> python3.6.2  
->
-> 执行这句话之前，需要下载数据集，在data文件夹中新建MNIST_M文件夹，并将数据集解压到MNIST_M文件夹中
->
-> `pip install -r requirements.txt`
+> python3.8.10  
+ ```shell
+ pip install -r requirements.txt
+ ```
 
 ### Data
+> 执行下面句话之前，需要下载数据集，在data文件夹中新建MNIST_M文件夹，并将数据集解压到MNIST_M文件夹中。
+>
 > In this work, MNIST and MNIST_M datasets are used in experiments. MNIST dataset  
 > can be downloaded with `torchvision.datasets`. MINIST_M dataset can be downloa-  
 > ded at [Yaroslav Ganin's homepage][3]. Then you can extract the file to your data dire-  
 > ctory and run the `preprocess.py` to make the directory able to be used with  
 > `torchvision.datasets.ImageFolder`:
-```
+```shell
 python preprocess.py
 ```
 
 ### Experiments
+
 > You can run `main.py` to implements the MNSIT experiments for the paper with the  
 > similar model and same paramenters.The paper's results and this work's results a-  
 > re as follows:  
@@ -31,15 +33,17 @@ python preprocess.py
 |Method     | Target Acc(paper) | Target Acc(this work)|
 |:----------:|:-----------------:|:---------------------:|
 |Source Only| 0.5225            | 0.5189|
-|DANN       | 0.7666            | 0.7600|``````
-
+|DANN| 0.7666 | 0.7600 |
 > Experiment on SVHN->MNIST is added in this project, but some bugs are not fixed.  
 > The accuracies of source and target domains are not good at the same time.
 
 > Experiment on SynDig->SVHN is added.
+>
+> SynDig数据集找不到。
 
 
 
 [1]:https://arxiv.org/pdf/1505.07818.pdf
 [2]:https://github.com/pumpikano/tf-dann
 [3]:http://yaroslav.ganin.net/
+

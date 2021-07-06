@@ -128,10 +128,10 @@ def main(args):
     if params.fig_mode is not None:
         print('Images from training on source domain:')
 
-        utils.displayImages(src_train_dataloader, imgName='source')
+        utils.displayImages(src_train_dataloader, img_name='source')
 
         print('Images from test on target domain:')
-        utils.displayImages(tgt_test_dataloader, imgName='target')
+        utils.displayImages(tgt_test_dataloader, img_name='target')
 
     # init models
     model_index = params.source_domain + '_' + params.target_domain

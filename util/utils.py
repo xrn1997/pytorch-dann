@@ -38,7 +38,7 @@ def get_train_loader(dataset):
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = datasets.ImageFolder(root=params.mnistm_path + '/train', transform=transform)
+        data = datasets.ImageFolder(root=params.mnist_m_path + '/train', transform=transform)
 
         dataloader = DataLoader(dataset=data,
                                 batch_size=params.batch_size,
@@ -70,7 +70,7 @@ def get_train_loader(dataset):
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = SynDig.SynDig(root=params.syndig_path, split='train', transform=transform, download=True)
+        data = SynDig.SynDig(root=params.synth_path, split='train', transform=transform, is_download=True)
 
         dataloader = DataLoader(dataset=data,
                                 batch_size=params.batch_size,
@@ -106,7 +106,7 @@ def get_test_loader(dataset):
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = datasets.ImageFolder(root=params.mnistm_path + '/test', transform=transform)
+        data = datasets.ImageFolder(root=params.mnist_m_path + '/test', transform=transform)
 
         dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
     elif dataset == 'SVHN':
@@ -126,7 +126,7 @@ def get_test_loader(dataset):
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = SynDig.SynDig(root=params.syndig_path, split='test', transform=transform, download=True)
+        data = SynDig.SynDig(root=params.synth_path, split='test', transform=transform, is_download=True)
 
         dataloader = DataLoader(dataset=data, batch_size=1, shuffle=False)
     else:
@@ -148,20 +148,20 @@ def optimizer_scheduler(optimizer, p):
     return optimizer
 
 
-def displayImages(dataloader, length=8, imgName=None):
+def displayImages(dataloader, length=8, img_name=None):
     """
     Randomly sample some images and display
-    :param dataloader: maybe trainloader or testloader
+    :param dataloader: maybe train dataloader or test dataloader
     :param length: number of images to be displayed
-    :param imgName: the name of saving image
+    :param img_name: the name of saving image
     :return:
     """
     if params.fig_mode is None:
         return
 
     # randomly sample some images.
-    dataiter = iter(dataloader)
-    images, labels = dataiter.next()
+    data_iter = iter(dataloader)
+    images, labels = data_iter.next()
 
     # process images so they can be displayed.
     images = images[:length]
@@ -181,21 +181,21 @@ def displayImages(dataloader, length=8, imgName=None):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        if imgName is None:
-            imgName = 'displayImages' + str(int(time.time()))
+        if img_name is None:
+            img_name = 'displayImages' + str(int(time.time()))
 
         # Check extension in case.
-        if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
-            imgName = os.path.join(folder, imgName + '.jpg')
+        if not (img_name.endswith('.jpg') or img_name.endswith('.png') or img_name.endswith('.jpeg')):
+            img_name = os.path.join(folder, img_name + '.jpg')
 
-        plt.imsave(imgName, images)
+        plt.imsave(img_name, images)
         plt.close()
 
     # print labels
     print(' '.join('%5s' % labels[j].item() for j in range(length)))
 
 
-def plot_embedding(X, y, d, title=None, imgName=None):
+def plot_embedding(X, y, d, title=None, img_name=None):
     """
     Plot an embedding X with the class label y colored by the domain d.
 
@@ -203,7 +203,7 @@ def plot_embedding(X, y, d, title=None, imgName=None):
     :param y: label
     :param d: domain
     :param title: title on the figure
-    :param imgName: the name of saving image
+    :param img_name: the name of saving image
 
     :return:
     """
@@ -243,13 +243,13 @@ def plot_embedding(X, y, d, title=None, imgName=None):
         if not os.path.exists(folder):
             os.makedirs(folder)
 
-        if imgName is None:
-            imgName = 'plot_embedding' + str(int(time.time()))
+        if img_name is None:
+            img_name = 'plot_embedding' + str(int(time.time()))
 
         # Check extension in case.
-        if not (imgName.endswith('.jpg') or imgName.endswith('.png') or imgName.endswith('.jpeg')):
-            imgName = os.path.join(folder, imgName + '.jpg')
+        if not (img_name.endswith('.jpg') or img_name.endswith('.png') or img_name.endswith('.jpeg')):
+            img_name = os.path.join(folder, img_name + '.jpg')
 
-        print('Saving ' + imgName + ' ...')
-        plt.savefig(imgName)
+        print('Saving ' + img_name + ' ...')
+        plt.savefig(img_name)
         plt.close()
