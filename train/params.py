@@ -30,17 +30,17 @@ synth_path = data_root + '/SynthDigits'
 save_dir = './experiment'
 
 # specific dataset params
-extractor_dict = {'MNIST_MNIST_M': models.Extractor(),
-                  'SVHN_MNIST': models.SVHN_Extractor(),
-                  'SynDig_SVHN': models.SVHN_Extractor()}
+feature_extractor_dict = {'MNIST_MNIST_M': models.FeatureExtractor(),
+                          'SVHN_MNIST': models.SVHNFeatureExtractor(),
+                          'SynDig_SVHN': models.SVHNFeatureExtractor()}  # 这个地方打个问号，我不知道SynDig和SVHN数据集的区别。
 
-class_dict = {'MNIST_MNIST_M': models.Class_classifier(),
-              'SVHN_MNIST': models.SVHN_Class_classifier(),
-              'SynDig_SVHN': models.SVHN_Class_classifier()}
+label_predictor_dict = {'MNIST_MNIST_M': models.LabelPredictor(),
+                        'SVHN_MNIST': models.SVHNLabelPredictor(),
+                        'SynDig_SVHN': models.SVHNLabelPredictor()}
 
-domain_dict = {'MNIST_MNIST_M': models.Domain_classifier(),
-               'SVHN_MNIST': models.SVHN_Domain_classifier(),
-               'SynDig_SVHN': models.SVHN_Domain_classifier()}
+domain_classifier_dict = {'MNIST_MNIST_M': models.DomainClassifier(),
+                          'SVHN_MNIST': models.SVHNDomainClassifier(),
+                          'SynDig_SVHN': models.SVHNDomainClassifier()}
 
 # dataset type
 source_domain = 'MNIST'

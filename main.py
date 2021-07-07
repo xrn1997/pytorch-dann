@@ -129,9 +129,9 @@ def main(args):
 
     # init models
     model_index = params.source_domain + '_' + params.target_domain
-    feature_extractor = params.extractor_dict[model_index]
-    class_classifier = params.class_dict[model_index]
-    domain_classifier = params.domain_dict[model_index]
+    feature_extractor = params.feature_extractor_dict[model_index]
+    class_classifier = params.label_predictor_dict[model_index]
+    domain_classifier = params.domain_classifier_dict[model_index]
 
     if params.use_gpu:
         feature_extractor.cuda()

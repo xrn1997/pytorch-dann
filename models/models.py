@@ -20,19 +20,22 @@ class GradReverse(torch.autograd.Function):
         grad_output = grad_output.neg() * ctx.constant
         return grad_output, None
 
-    def grad_reverse(x, constant):
-        return GradReverse.apply(x, constant)
+    def grad_reverse(self, constant):
+        return GradReverse.apply(self, constant)
 
 
-class Extractor(nn.Module):
+class FeatureExtractor(nn.Module):
+    """
+    特征提取器
+    """
 
     def __init__(self):
-        super(Extractor, self).__init__()
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=5)
-        self.conv2 = nn.Conv2d(32, 48, kernel_size=5)
-        # self.conv1 = nn.Conv2d(3, 64, kernel_size= 5)
+        super(FeatureExtractor, self).__init__()
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=(5,))  # 卷积核现在需要输入元组，元组是用小括号括起来的，如果只包含一个元素，需要加逗号。
+        self.conv2 = nn.Conv2d(32, 48, kernel_size=(5,))
+        # self.conv1 = nn.Conv2d(3, 64, kernel_size= (5,))
         # self.bn1 = nn.BatchNorm2d(64)
-        # self.conv2 = nn.Conv2d(64, 50, kernel_size= 5)
+        # self.conv2 = nn.Conv2d(64, 50, kernel_size= (5,))
         # self.bn2 = nn.BatchNorm2d(50)
         self.conv2_drop = nn.Dropout2d()
 
@@ -48,10 +51,13 @@ class Extractor(nn.Module):
         return x
 
 
-class Class_classifier(nn.Module):
+class LabelPredictor(nn.Module):
+    """
+    标签预测器
+    """
 
     def __init__(self):
-        super(Class_classifier, self).__init__()
+        super(LabelPredictor, self).__init__()
         # self.fc1 = nn.Linear(50 * 4 * 4, 100)
         # self.bn1 = nn.BatchNorm1d(100)
         # self.fc2 = nn.Linear(100, 100)
@@ -74,10 +80,13 @@ class Class_classifier(nn.Module):
         return F.log_softmax(logits, 1)
 
 
-class Domain_classifier(nn.Module):
+class DomainClassifier(nn.Module):
+    """
+    域鉴别器
+    """
 
     def __init__(self):
-        super(Domain_classifier, self).__init__()
+        super(DomainClassifier, self).__init__()
         # self.fc1 = nn.Linear(50 * 4 * 4, 100)
         # self.bn1 = nn.BatchNorm1d(100)
         # self.fc2 = nn.Linear(100, 2)
@@ -94,15 +103,17 @@ class Domain_classifier(nn.Module):
         return logits
 
 
-class SVHN_Extractor(nn.Module):
-
+class SVHNFeatureExtractor(nn.Module):
+    """
+    SVHN特征提取器
+    """
     def __init__(self):
-        super(SVHN_Extractor, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=5)
+        super(SVHNFeatureExtractor, self).__init__()
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=(5,))
         self.bn1 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 64, kernel_size=5)
+        self.conv2 = nn.Conv2d(64, 64, kernel_size=(5,))
         self.bn2 = nn.BatchNorm2d(64)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=5, padding=2)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=(5,), padding=2)
         self.bn3 = nn.BatchNorm2d(128)
         self.conv3_drop = nn.Dropout2d()
         self.init_params()
@@ -130,10 +141,12 @@ class SVHN_Extractor(nn.Module):
         return x.view(-1, 128 * 3 * 3)
 
 
-class SVHN_Class_classifier(nn.Module):
-
+class SVHNLabelPredictor(nn.Module):
+    """
+    SVHN标签预测器
+    """
     def __init__(self):
-        super(SVHN_Class_classifier, self).__init__()
+        super(SVHNLabelPredictor, self).__init__()
         self.fc1 = nn.Linear(128 * 3 * 3, 3072)
         self.bn1 = nn.BatchNorm1d(3072)
         self.fc2 = nn.Linear(3072, 2048)
@@ -149,10 +162,12 @@ class SVHN_Class_classifier(nn.Module):
         return F.log_softmax(logits, 1)
 
 
-class SVHN_Domain_classifier(nn.Module):
-
+class SVHNDomainClassifier(nn.Module):
+    """
+    SVHN域鉴别器
+    """
     def __init__(self):
-        super(SVHN_Domain_classifier, self).__init__()
+        super(SVHNDomainClassifier, self).__init__()
         self.fc1 = nn.Linear(128 * 3 * 3, 1024)
         self.bn1 = nn.BatchNorm1d(1024)
         self.fc2 = nn.Linear(1024, 1024)
