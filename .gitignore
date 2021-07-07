@@ -1,6 +1,3 @@
 /.idea/
 /experiment/
-/models/__pycache__/
-/data/__pycache__/
-/train/__pycache__/
-/util/__pycache__/
+/*/__pycache__/

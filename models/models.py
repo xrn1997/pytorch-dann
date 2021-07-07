@@ -31,11 +31,12 @@ class FeatureExtractor(nn.Module):
 
     def __init__(self):
         super(FeatureExtractor, self).__init__()
-        self.conv1 = nn.Conv2d(3, 32, kernel_size=(5,))  # 卷积核现在需要输入元组，元组是用小括号括起来的，如果只包含一个元素，需要加逗号。
-        self.conv2 = nn.Conv2d(32, 48, kernel_size=(5,))
-        # self.conv1 = nn.Conv2d(3, 64, kernel_size= (5,))
+        # 卷积核现在需要输入元组，输入整数pycharm会有警告。
+        self.conv1 = nn.Conv2d(3, 32, kernel_size=(5, 5))
+        self.conv2 = nn.Conv2d(32, 48, kernel_size=(5, 5))
+        # self.conv1 = nn.Conv2d(3, 64, kernel_size= (5, 5))
         # self.bn1 = nn.BatchNorm2d(64)
-        # self.conv2 = nn.Conv2d(64, 50, kernel_size= (5,))
+        # self.conv2 = nn.Conv2d(64, 50, kernel_size= (5, 5))
         # self.bn2 = nn.BatchNorm2d(50)
         self.conv2_drop = nn.Dropout2d()
 
@@ -107,13 +108,14 @@ class SVHNFeatureExtractor(nn.Module):
     """
     SVHN特征提取器
     """
+
     def __init__(self):
         super(SVHNFeatureExtractor, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=(5,))
+        self.conv1 = nn.Conv2d(3, 64, kernel_size=(5, 5))
         self.bn1 = nn.BatchNorm2d(64)
-        self.conv2 = nn.Conv2d(64, 64, kernel_size=(5,))
+        self.conv2 = nn.Conv2d(64, 64, kernel_size=(5, 5))
         self.bn2 = nn.BatchNorm2d(64)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=(5,), padding=2)
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=(5, 5))
         self.bn3 = nn.BatchNorm2d(128)
         self.conv3_drop = nn.Dropout2d()
         self.init_params()
@@ -145,6 +147,7 @@ class SVHNLabelPredictor(nn.Module):
     """
     SVHN标签预测器
     """
+
     def __init__(self):
         super(SVHNLabelPredictor, self).__init__()
         self.fc1 = nn.Linear(128 * 3 * 3, 3072)
@@ -166,6 +169,7 @@ class SVHNDomainClassifier(nn.Module):
     """
     SVHN域鉴别器
     """
+
     def __init__(self):
         super(SVHNDomainClassifier, self).__init__()
         self.fc1 = nn.Linear(128 * 3 * 3, 1024)
