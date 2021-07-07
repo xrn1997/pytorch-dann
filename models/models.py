@@ -115,7 +115,7 @@ class SVHNFeatureExtractor(nn.Module):
         self.bn1 = nn.BatchNorm2d(64)
         self.conv2 = nn.Conv2d(64, 64, kernel_size=(5, 5))
         self.bn2 = nn.BatchNorm2d(64)
-        self.conv3 = nn.Conv2d(64, 128, kernel_size=(5, 5))
+        self.conv3 = nn.Conv2d(64, 128, kernel_size=(5, 5), padding=2)
         self.bn3 = nn.BatchNorm2d(128)
         self.conv3_drop = nn.Dropout2d()
         self.init_params()
