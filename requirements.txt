@@ -1,8 +1,8 @@
-scipy>=1.1.0
-numpy>=1.14.3
-matplotlib>=2.1.0
-torch>=0.4.1
-Pillow>=5.1.0
-scikit_learn>=0.19.2
-torchvision>=0.2.1
+scipy>=1.6.2
+numpy>=1.20.2
+matplotlib>=3.3.4
+torch>=1.9.0
+pillow>=8.3.1
+scikit_learn>=0.24.2
+torchvision>=0.10.0
 requests>=2.25.1

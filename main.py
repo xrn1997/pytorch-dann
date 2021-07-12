@@ -2,13 +2,13 @@
 Main script for models
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-from models import models
+
+import time
+
 from train import test, train, params
 from util import utils
 from sklearn.manifold import TSNE
-from torch.autograd import Variable
 
-import time
 import torch
 import torch.nn as nn
 import numpy as np
@@ -16,8 +16,9 @@ import argparse, sys, os
 
 
 def visualize_performance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
-                          tgt_test_dataloader, num_of_samples=None, img_name=None):
+                          tgt_test_dataloader, num_of_samples=params.batch_size, img_name=None):
     """
+    可视化评估  \r\n
     Evaluate the performance of DANN and source only by visualization.
 
     :param feature_extractor: network used to extract feature from target samples 特征提取器
@@ -36,16 +37,10 @@ def visualize_performance(feature_extractor, class_classifier, domain_classifier
     class_classifier.eval()
     domain_classifier.eval()
 
-    # Randomly select samples from source domain and target domain.
-    # 从源域和目标域随机选取的样本数量
-    if num_of_samples is None:
-        num_of_samples = params.batch_size
-    else:
-        # NOT PRECISELY COMPUTATION
-        # 非精确计算
-        # \是续行的意思。
-        assert len(src_test_dataloader) < num_of_samples, \
-            'The number of samples can not bigger than dataset.'
+    # NOT PRECISELY COMPUTATION
+    # 非精确计算
+    assert len(src_test_dataloader) < num_of_samples, \
+        'The number of samples can not bigger than dataset.'
 
     # Collect source data.
     s_images, s_labels, s_tags = [], [], []
@@ -89,16 +84,16 @@ def visualize_performance(feature_extractor, class_classifier, domain_classifier
     embedding1 = feature_extractor(s_images)
     embedding2 = feature_extractor(t_images)
 
-    tsne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=3000)
+    t_sne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=3000)
 
     if params.use_gpu:
-        dann_tsne = tsne.fit_transform(np.concatenate((embedding1.cpu().detach().numpy(),
-                                                       embedding2.cpu().detach().numpy())))
+        dann_t_sne = t_sne.fit_transform(np.concatenate((embedding1.cpu().detach().numpy(),
+                                                         embedding2.cpu().detach().numpy())))
     else:
-        dann_tsne = tsne.fit_transform(np.concatenate((embedding1.detach().numpy(),
-                                                       embedding2.detach().numpy())))
+        dann_t_sne = t_sne.fit_transform(np.concatenate((embedding1.detach().numpy(),
+                                                         embedding2.detach().numpy())))
 
-    utils.plot_embedding(dann_tsne, np.concatenate((s_labels, t_labels)),
+    utils.plot_embedding(dann_t_sne, np.concatenate((s_labels, t_labels)),
                          np.concatenate((s_tags, t_tags)), 'Domain Adaptation', img_name)
 
 
@@ -114,12 +109,10 @@ def main(args):
     params.save_dir = args.save_dir
 
     # prepare the source data and target data
-
     src_train_dataloader = utils.get_train_loader(params.source_domain)
     src_test_dataloader = utils.get_test_loader(params.source_domain)
     tgt_train_dataloader = utils.get_train_loader(params.target_domain)
     tgt_test_dataloader = utils.get_test_loader(params.target_domain)
-
     # 如果fig_mode不为空，会在save_dir中保存前8个（默认）图片，保存为1张。
     if params.fig_mode is not None:
         print('Images from training on source domain:')
@@ -130,33 +123,36 @@ def main(args):
     # init models
     model_index = params.source_domain + '_' + params.target_domain
     feature_extractor = params.feature_extractor_dict[model_index]
-    class_classifier = params.label_predictor_dict[model_index]
+    label_predictor = params.label_predictor_dict[model_index]
     domain_classifier = params.domain_classifier_dict[model_index]
 
     if params.use_gpu:
-        feature_extractor.cuda()
-        class_classifier.cuda()
+        feature_extractor.cuda()  # cuda()的作用就是将cpu转为gpu，没有其他特别的地方。
+        label_predictor.cuda()
         domain_classifier.cuda()
 
-    # init criterions
+    # init criterions 损失函数
     class_criterion = nn.NLLLoss()
     domain_criterion = nn.NLLLoss()
 
-    # init optimizer
+    # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},
-                                 {'params': class_classifier.parameters()},
+                                 {'params': label_predictor.parameters()},
                                  {'params': domain_classifier.parameters()}], lr=params.learning_rate, momentum=0.9)
+    # 尝试亚当优化器 也许是我用错了，狗屎一样。
+    # optimizer = torch.optim.Adam([{'params': feature_extractor.parameters()},
+    #                               {'params': label_predictor.parameters()},
+    #                               {'params': domain_classifier.parameters()}], lr=params.learning_rate)
 
     for epoch in range(params.epochs):
         print('Epoch: {}'.format(epoch))
-        train.train(args.training_mode, feature_extractor, class_classifier, domain_classifier, class_criterion,
-                    domain_criterion,
-                    src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
-        test.test(feature_extractor, class_classifier, domain_classifier, src_test_dataloader, tgt_test_dataloader)
+        train.train(args.training_mode, feature_extractor, label_predictor, domain_classifier, class_criterion,
+                    domain_criterion, src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
+        test.test(feature_extractor, label_predictor, domain_classifier, src_test_dataloader, tgt_test_dataloader)
 
         # Plot embeddings periodically.
         if epoch % params.embed_plot_epoch == 0 and params.fig_mode is not None:
-            visualize_performance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
+            visualize_performance(feature_extractor, label_predictor, domain_classifier, src_test_dataloader,
                                   tgt_test_dataloader, img_name='embedding_' + str(epoch))
 
 

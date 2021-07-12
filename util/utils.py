@@ -1,13 +1,15 @@
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from data import SynDig
+from data import syn_dig
 from train import params
 import torch
 import torchvision
 import numpy as np
 import os, time
+import matplotlib
 import matplotlib.pyplot as plt
-plt.switch_backend('agg')  # agg不显示图片
+
+matplotlib.use('TkAgg')
 
 
 def get_train_loader(dataset):
@@ -21,14 +23,13 @@ def get_train_loader(dataset):
             transforms.ToTensor(),
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
-
-        data = datasets.MNIST(root=params.mnist_path, train=True, transform=transform,
+        data = datasets.MNIST(root=params.mnist_path, transform=transform,
                               download=True)
 
         dataloader = DataLoader(dataset=data,
-                                batch_size=params.batch_size, # 每次处理的batch大小
+                                batch_size=params.batch_size,  # 每次处理的batch大小
                                 shuffle=True,  # shuffle的作用是乱序，先顺序读取，再乱序索引。
-                                num_workers=2,  # 线程数
+                                num_workers=3,  # 线程数
                                 pin_memory=True)
         '''
       pin_memory就是锁页内存。
@@ -38,22 +39,18 @@ def get_train_loader(dataset):
       当系统卡住，或者交换内存使用过多的时候，设置pin_memory=False。因为pin_memory与电脑硬件性能有关，pytorch开发者不能确保每一个炼丹玩家都有高端设备，
       因此pin_memory默认为False。
       '''
-
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
-            transforms.RandomCrop(28),
+            transforms.RandomCrop(28),  # 随机长宽比裁剪
             transforms.ToTensor(),
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
-
         data = datasets.ImageFolder(root=params.mnist_m_path + '/train', transform=transform)
-
         dataloader = DataLoader(dataset=data,
                                 batch_size=params.batch_size,
                                 shuffle=True,
-                                num_workers=2,
+                                num_workers=3,
                                 pin_memory=True)
-
     elif dataset == 'SVHN':
         transform = transforms.Compose([
             transforms.RandomCrop(28),
@@ -64,7 +61,7 @@ def get_train_loader(dataset):
         data1 = datasets.SVHN(root=params.svhn_path, split='train', transform=transform, download=True)
         data2 = datasets.SVHN(root=params.svhn_path, split='extra', transform=transform, download=True)
 
-        data = torch.utils.data.ConcatDataset((data1, data2))
+        data = torch.utils.data.ConcatDataset((data1, data2))  # 连接多个数据集
 
         dataloader = DataLoader(dataset=data,
                                 batch_size=params.batch_size,
@@ -78,7 +75,7 @@ def get_train_loader(dataset):
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = SynDig.SynDig(root=params.synth_path, split='train', transform=transform, is_download=True)
+        data = syn_dig.SynDig(root=params.synth_path, split='train', transform=transform, is_download=True)
 
         dataloader = DataLoader(dataset=data,
                                 batch_size=params.batch_size,
@@ -106,7 +103,11 @@ def get_test_loader(dataset):
         data = datasets.MNIST(root=params.mnist_path, train=False, transform=transform,
                               download=True)
 
-        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=3,
+                                pin_memory=True)
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             # transforms.RandomCrop((28)),
@@ -117,7 +118,11 @@ def get_test_loader(dataset):
 
         data = datasets.ImageFolder(root=params.mnist_m_path + '/test', transform=transform)
 
-        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=3,
+                                pin_memory=True)
     elif dataset == 'SVHN':
         transform = transforms.Compose([
             transforms.CenterCrop(28),
@@ -127,7 +132,11 @@ def get_test_loader(dataset):
 
         data = datasets.SVHN(root=params.svhn_path, split='test', transform=transform, download=True)
 
-        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=2,
+                                pin_memory=True)
     elif dataset == 'SynDig':
         transform = transforms.Compose([
             transforms.CenterCrop(28),
@@ -135,9 +144,13 @@ def get_test_loader(dataset):
             transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
         ])
 
-        data = SynDig.SynDig(root=params.synth_path, split='test', transform=transform, is_download=True)
+        data = syn_dig.SynDig(root=params.synth_path, split='test', transform=transform, is_download=True)
 
-        dataloader = DataLoader(dataset=data, batch_size=params.batch_size, shuffle=True)
+        dataloader = DataLoader(dataset=data,
+                                batch_size=params.batch_size,
+                                shuffle=True,
+                                num_workers=2,
+                                pin_memory=True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
 
@@ -146,6 +159,7 @@ def get_test_loader(dataset):
 
 def optimizer_scheduler(optimizer, p):
     """
+    调整学习率 \r\n
     Adjust the learning rate of optimizer
 
     :param optimizer: optimizer for updating parameters
@@ -160,6 +174,7 @@ def optimizer_scheduler(optimizer, p):
 
 def display_images(dataloader, length=8, img_name=None):
     """
+    随机展示图片  \r\n
     Randomly sample some images and display
 
     :param dataloader: maybe train dataloader or test dataloader
@@ -172,11 +187,11 @@ def display_images(dataloader, length=8, img_name=None):
 
     # randomly sample some images.
     data_iter = iter(dataloader)
-    images, labels = next(data_iter) # next dataloader 的默认大小就是batch_size的大小
+    images, labels = next(data_iter)  # next dataloader 的默认大小就是batch_size的大小
     # process images so they can be displayed.
     images = images[:length]
 
-    images = torchvision.utils.make_grid(images).numpy()
+    images = torchvision.utils.make_grid(images).numpy()  # make_grid的作用是将若干幅图像拼成一幅图像。
     images = images / 2 + 0.5
     images = np.transpose(images, (1, 2, 0))
 
@@ -205,11 +220,12 @@ def display_images(dataloader, length=8, img_name=None):
     print(' '.join('%5s' % labels[j].item() for j in range(length)))
 
 
-def plot_embedding(X, y, d, title=None, img_name=None):
+def plot_embedding(loc, y, d, title=None, img_name=None):
     """
-    Plot an embedding X with the class label y colored by the domain d.
+    绘图 \r\n
+    Plot an embedding loc with the class label y colored by the domain d.
 
-    :param X: embedding
+    :param loc: embedding
     :param y: label
     :param d: domain
     :param title: title on the figure
@@ -220,21 +236,31 @@ def plot_embedding(X, y, d, title=None, img_name=None):
     if params.fig_mode is None:
         return
 
-    # normalization
-    x_min, x_max = np.min(X, 0), np.max(X, 0)
-    X = (X - x_min) / (x_max - x_min)
+    # normalization 标准化
+    x_min, x_max = np.min(loc, 0), np.max(loc, 0)
+    loc = (loc - x_min) / (x_max - x_min)
 
     # Plot colors numbers
     plt.figure(figsize=(10, 10))
+    """
+     plt.subplot(nrows, ncols, index, **kwargs)
+     nrows, ncols, index：位置是由三个整型数值构成，第一个代表行数，第二个代表列数，第三个代表索引位置。
+     举个列子：plt.subplot(2, 3, 5) 和 plt.subplot(235) 是一样一样的。2代表2行3代表3列，2行3列意味着有6个子图，5意味着是代码是绘制
+     第五个子图。
+     projection 可选参数：可以选择子图的类型，比如选择polar，就是一个极点图。默认是none就是一个线形图。
+     polar 可选参数：如果选择true，就是一个极点图，上一个参数也能实现该功能。
+   """
     ax = plt.subplot(111)
 
-    for i in range(X.shape[0]):
+    for i in range(loc.shape[0]):
         # plot colored number
-        plt.text(X[i, 0], X[i, 1], str(y[i]),
-                 color=plt.cm.bwr(d[i] / 1.),
-                 fontdict={'weight': 'bold', 'size': 9})
+        plt.text(loc[i, 0], loc[i, 1],
+                 str(y[i]),  # 标签的符号
+                 color=plt.cm.bwr(d[i] / 1.),  # bwr这个方法找不到
+                 fontdict={'weight': 'bold', 'size': 9}  # 标签的样式
+                 )
 
-    plt.xticks([]), plt.yticks([])
+    plt.xticks([]), plt.yticks([])  # 设置X轴和Y轴的刻度
 
     # If title is not given, we assign training_mode to the title.
     if title is not None:

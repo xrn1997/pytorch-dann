@@ -1,3 +1,5 @@
+import os
+
 from torch.autograd import Variable
 from train import params
 from util import utils
@@ -6,14 +8,14 @@ import numpy as np
 import torch.optim as optim
 
 
-def train(training_mode, feature_extractor, class_classifier, domain_classifier, class_criterion, domain_criterion,
+def train(training_mode, feature_extractor, label_predictor, domain_classifier, class_criterion, domain_criterion,
           source_dataloader, target_dataloader, optimizer, epoch):
     """
     Execute target domain adaptation
 
     :param training_mode:
     :param feature_extractor:
-    :param class_classifier:
+    :param label_predictor:
     :param domain_classifier:
     :param class_criterion:
     :param domain_criterion:
@@ -23,20 +25,34 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
     :param epoch:
     :return:
     """
-
     # setup models
     feature_extractor.train()
-    class_classifier.train()
+    label_predictor.train()
     domain_classifier.train()
 
+    # 加载已保存的参数
+    if training_mode == 'dann':
+        if not os.path.exists(params.dann_params_save_path):
+            os.mkdir(params.dann_params_save_path)
+        if os.path.exists(params.dann_params_save_path + "/fe.pth"):
+            feature_extractor.load_state_dict(torch.load(params.dann_params_save_path + "/fe.pth"))
+        if os.path.exists(params.dann_params_save_path + "/dc.pth"):
+            domain_classifier.load_state_dict(torch.load(params.dann_params_save_path + "/dc.pth"))
+        if os.path.exists(params.dann_params_save_path + "/lp.pth"):
+            label_predictor.load_state_dict(torch.load(params.dann_params_save_path + "/lp.pth"))
+    if training_mode == 'source':
+        if not os.path.exists(params.source_params_save_path):
+            os.mkdir(params.source_params_save_path)
+        if os.path.exists(params.source_params_save_path+"/fe.pth"):
+            feature_extractor.load_state_dict(torch.load(params.source_params_save_path+"/fe.pth"))
+        if os.path.exists(params.source_params_save_path+"/lp.pth"):
+            label_predictor.load_state_dict(torch.load(params.source_params_save_path+"/lp.pth"))
     # steps
     start_steps = epoch * len(source_dataloader)
     total_steps = params.epochs * len(source_dataloader)
-
     for batch_idx, (sdata, tdata) in enumerate(zip(source_dataloader, target_dataloader)):
-
         if training_mode == 'dann':
-            # setup hyperparameters
+            # setup hyper_parameters
             p = float(batch_idx + start_steps) / total_steps
             constant = 2. / (1. + np.exp(-params.gamma * p)) - 1
 
@@ -64,13 +80,12 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             else:
                 source_labels = Variable(torch.zeros((input1.size()[0])).type(torch.LongTensor))
                 target_labels = Variable(torch.ones((input2.size()[0])).type(torch.LongTensor))
-
             # compute the output of source domain and target domain
             src_feature = feature_extractor(input1)
             tgt_feature = feature_extractor(input2)
 
             # compute the class loss of src_feature
-            class_preds = class_classifier(src_feature)
+            class_preds = label_predictor(src_feature)
             class_loss = class_criterion(class_preds, label1)
 
             # compute the domain loss of src_feature and target_feature
@@ -91,7 +106,6 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
                     100. * batch_idx / len(target_dataloader), loss.item(), class_loss.item(),
                     domain_loss.item()
                 ))
-
         elif training_mode == 'source':
             # prepare the data
             input1, label1 = sdata
@@ -104,7 +118,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
                 input1, label1 = Variable(input1), Variable(label1)
 
             # setup optimizer
-            optimizer = optim.SGD(list(feature_extractor.parameters()) + list(class_classifier.parameters()), lr=0.01,
+            optimizer = optim.SGD(list(feature_extractor.parameters()) + list(label_predictor.parameters()), lr=0.01,
                                   momentum=0.9)
             optimizer.zero_grad()
 
@@ -112,7 +126,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             src_feature = feature_extractor(input1)
 
             # compute the class loss of src_feature
-            class_preds = class_classifier(src_feature)
+            class_preds = label_predictor(src_feature)
             class_loss = class_criterion(class_preds, label1)
 
             class_loss.backward()
@@ -136,7 +150,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
                 input2, label2 = Variable(input2), Variable(label2)
 
             # setup optimizer
-            optimizer = optim.SGD(list(feature_extractor.parameters()) + list(class_classifier.parameters()), lr=0.01,
+            optimizer = optim.SGD(list(feature_extractor.parameters()) + list(label_predictor.parameters()), lr=0.01,
                                   momentum=0.9)
             optimizer.zero_grad()
 
@@ -144,7 +158,7 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
             tgt_feature = feature_extractor(input2)
 
             # compute the class loss of src_feature
-            class_preds = class_classifier(tgt_feature)
+            class_preds = label_predictor(tgt_feature)
             class_loss = class_criterion(class_preds, label2)
 
             class_loss.backward()
@@ -156,3 +170,10 @@ def train(training_mode, feature_extractor, class_classifier, domain_classifier,
                     batch_idx * len(input2), len(target_dataloader.dataset),
                     100. * batch_idx / len(target_dataloader), class_loss.item()
                 ))
+    if training_mode == 'dann':
+        torch.save(feature_extractor.state_dict(), params.dann_params_save_path + "/fe.pth")
+        torch.save(domain_classifier.state_dict(), params.dann_params_save_path + "/dc.pth")
+        torch.save(label_predictor.state_dict(), params.dann_params_save_path + "/lp.pth")
+    if training_mode == 'source':
+        torch.save(feature_extractor.state_dict(), params.source_params_save_path+"/fe.pth")
+        torch.save(label_predictor.state_dict(), params.source_params_save_path+"/lp.pth")
