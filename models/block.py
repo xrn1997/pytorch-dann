@@ -6,7 +6,7 @@ class ConvBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding):
         super(ConvBlock, self).__init__()
         self.conv2d = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                padding=padding)
+                                padding=padding,bias=True)
 
     def forward(self, x):
         x = self.conv2d(x)
@@ -19,7 +19,7 @@ class ResidualBlock(nn.Module):
     def __init__(self, in_channels, out_channels, kernel_size, padding):
         super(ResidualBlock, self).__init__()
         self.conv2d = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                padding=padding)
+                                padding=padding,bias=True)
 
     def forward(self, x):
         x = self.conv2d(x)

@@ -2,182 +2,50 @@
 Main script for models
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
-
 from train import test, train, params
 from util import utils
-from sklearn.manifold import TSNE
-
 import torch
 import torch.nn as nn
-import numpy as np
-import argparse, sys
+import models
 
 
-def visualize_performance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
-                          tgt_test_dataloader, num_of_samples=params.batch_size, img_name=None):
-    """
-    可视化评估  \r\n
-    Evaluate the performance of DANN and source only by visualization.
-
-    :param feature_extractor: network used to extract feature from target samples 特征提取器
-    :param class_classifier: network used to predict labels 标签预测器
-    :param domain_classifier: network used to predict domain 域鉴别器
-    :param src_test_dataloader: test dataloader of source domain 源域测试数据
-    :param tgt_test_dataloader: test dataloader of target domain 目标域测试数据
-    :param num_of_samples: the number of samples (from train and test respectively) for t-sne
-    :param img_name: the name of saving image
-
-    :return:
-    """
-
-    # Setup the network
-    feature_extractor.eval()
-    class_classifier.eval()
-    domain_classifier.eval()
-
-    # NOT PRECISELY COMPUTATION
-    # 非精确计算
-    assert len(src_test_dataloader) < num_of_samples, \
-        'The number of samples can not bigger than dataset.'
-
-    # Collect source data.
-    s_images, s_labels, s_tags = [], [], []
-    for batch in src_test_dataloader:
-        images, labels = batch
-
-        if params.use_gpu:
-            s_images.append(images.cuda())
-        else:
-            s_images.append(images)
-        s_labels.append(labels)
-
-        s_tags.append(torch.zeros((labels.size()[0])).type(torch.LongTensor))
-
-        if len(s_images * params.batch_size) > num_of_samples:
-            break
-
-    s_images, s_labels, s_tags = torch.cat(s_images)[:num_of_samples], torch.cat(s_labels)[:num_of_samples], torch.cat(
-        s_tags)[:num_of_samples]
-
-    # Collect test data.
-    t_images, t_labels, t_tags = [], [], []
-    for batch in tgt_test_dataloader:
-        images, labels = batch
-
-        if params.use_gpu:
-            t_images.append(images.cuda())
-        else:
-            t_images.append(images)
-        t_labels.append(labels)
-
-        t_tags.append(torch.ones((labels.size()[0])).type(torch.LongTensor))
-
-        if len(t_images * params.batch_size) > num_of_samples:
-            break
-
-    t_images, t_labels, t_tags = torch.cat(t_images)[:num_of_samples], torch.cat(t_labels)[:num_of_samples], torch.cat(
-        t_tags)[:num_of_samples]
-
-    # Compute the embedding of target domain.
-    embedding1 = feature_extractor(s_images)
-    embedding2 = feature_extractor(t_images)
-
-    t_sne = TSNE(perplexity=30, n_components=2, init='pca', n_iter=3000)
-
-    if params.use_gpu:
-        dann_t_sne = t_sne.fit_transform(np.concatenate((embedding1.cpu().detach().numpy(),
-                                                         embedding2.cpu().detach().numpy())))
-    else:
-        dann_t_sne = t_sne.fit_transform(np.concatenate((embedding1.detach().numpy(),
-                                                         embedding2.detach().numpy())))
-
-    utils.plot_embedding(dann_t_sne, np.concatenate((s_labels, t_labels)),
-                         np.concatenate((s_tags, t_tags)), 'Domain Adaptation', img_name)
-
-
-def main(args):
-    # Set global parameters.
-    params.fig_mode = args.fig_mode
-    params.epochs = args.max_epoch
-    params.training_mode = args.training_mode
-    params.source_domain = args.source_domain
-    params.target_domain = args.target_domain
-    params.embed_plot_epoch = args.embed_plot_epoch
-    params.learning_rate = args.lr
-    params.save_dir = args.save_dir
-
+def main():
     # prepare the source data and target data
     src_train_dataloader = utils.get_train_loader(params.source_domain)
     src_test_dataloader = utils.get_test_loader(params.source_domain)
     tgt_train_dataloader = utils.get_train_loader(params.target_domain)
     tgt_test_dataloader = utils.get_test_loader(params.target_domain)
-    # 如果fig_mode不为空，会在save_dir中保存前8个（默认）图片，保存为1张。
-    if params.fig_mode is not None:
-        print('Images from training on source domain:')
-        utils.display_images(src_train_dataloader, img_name='source')
-        print('Images from test on target domain:')
-        utils.display_images(tgt_test_dataloader, img_name='target')
 
     # init models
-    model_index = params.source_domain + '_' + params.target_domain
-    feature_extractor = params.feature_extractor_dict[model_index]
-    label_predictor = params.label_predictor_dict[model_index]
-    domain_classifier = params.domain_classifier_dict[model_index]
+    feature_extractor = models.ME()
+    label_predictor_1 = models.M1()
+    label_predictor_2 = models.M2()
+    label_predictor_3 = models.M3()
+    domain_classifier = models.MD()
 
-    if params.use_gpu:
-        feature_extractor.cuda()  # cuda()的作用就是将cpu转为gpu，没有其他特别的地方。
-        label_predictor.cuda()
-        domain_classifier.cuda()
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    feature_extractor.to(device)
+    label_predictor_1.to(device)
+    label_predictor_2.to(device)
+    label_predictor_3.to(device)
+    domain_classifier.to(device)
 
     # init criterions 损失函数
-    class_criterion = nn.NLLLoss()
+    label_criterion = nn.NLLLoss(reduction='sum')
     domain_criterion = nn.NLLLoss()
 
     # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},
-                                 {'params': label_predictor.parameters()},
+                                 {'params': label_predictor_1.parameters()},
                                  {'params': domain_classifier.parameters()}], lr=params.learning_rate, momentum=0.9,
                                 weight_decay=0.0001)
 
     for epoch in range(params.epochs):
         print('Epoch: {}'.format(epoch))
-        train.train(args.training_mode, feature_extractor, label_predictor, domain_classifier, class_criterion,
+        train.train(feature_extractor, label_predictor_1, domain_classifier, label_criterion,
                     domain_criterion, src_train_dataloader, tgt_train_dataloader, optimizer, epoch)
-        test.test(feature_extractor, label_predictor, domain_classifier, src_test_dataloader, tgt_test_dataloader)
-
-        # Plot embeddings periodically.
-        if epoch % params.embed_plot_epoch == 0 and params.fig_mode is not None:
-            visualize_performance(feature_extractor, label_predictor, domain_classifier, src_test_dataloader,
-                                  tgt_test_dataloader, img_name='embedding_' + str(epoch))
-
-
-def parse_arguments(argv):
-    """
-    执行参数 \r\n
-    更多提示请执行 \r\n
-    python main.py -h
-
-    :param argv: arguments
-    """
-    parser = argparse.ArgumentParser()
-
-    parser.add_argument('--fig_mode', type=str, default=params.fig_mode, help='Plot experiment '
-                                                                              'figures.有两个选项，一是save，二是display（不保存）。')
-
-    parser.add_argument('--save_dir', type=str, default=params.save_dir, help='Path to save plotted images. ')
-
-    parser.add_argument('--training_mode', type=str, default=params.training_mode, help='Choose a mode to train the '
-                                                                                        'model. 训练的模型')
-
-    parser.add_argument('--max_epoch', type=int, default=params.epochs, help='The max number of epochs.最大训练轮数。')
-
-    parser.add_argument('--embed_plot_epoch', type=int, default=params.embed_plot_epoch, help='Epoch number of '
-                                                                                              'plotting embeddings.')
-
-    parser.add_argument('--lr', type=float, default=params.learning_rate, help='Learning rate. 学习率。')
-
-    return parser.parse_args()
+        test.test(feature_extractor, label_predictor_1, domain_classifier, src_test_dataloader, tgt_test_dataloader)
 
 
 if __name__ == '__main__':
-    main(parse_arguments(sys.argv[1:]))
+    main()

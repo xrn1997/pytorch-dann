@@ -34,7 +34,7 @@ def test(feature_extractor, class_classifier, domain_classifier, source_dataload
         constant = 2. / (1. + np.exp(-10 * p)) - 1.
 
         input1, label1 = sdata
-        if params.use_gpu:
+        if torch.cuda.is_available():
             input1, label1 = Variable(input1.cuda()), Variable(label1.cuda())
             src_labels = Variable(torch.zeros((input1.size()[0])).type(torch.LongTensor).cuda())
         else:
@@ -55,7 +55,7 @@ def test(feature_extractor, class_classifier, domain_classifier, source_dataload
         constant = 2. / (1. + np.exp(-10 * p)) - 1
 
         input2, label2 = tdata
-        if params.use_gpu:
+        if torch.cuda.is_available():
             input2, label2 = Variable(input2.cuda()), Variable(label2.cuda())
             tgt_labels = Variable(torch.ones((input2.size()[0])).type(torch.LongTensor).cuda())
         else:

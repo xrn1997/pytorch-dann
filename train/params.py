@@ -6,7 +6,6 @@ embed_plot_epoch = 10
 training_mode = 'dann'  # 有两个选择，一是dann，二是source
 
 # model params
-use_gpu = True  # 是否使用GPU
 dataset_mean = [0.5]  # 均值
 dataset_std = [0.5]  # 标准差
 learning_rate = 0.1  # 学习率
