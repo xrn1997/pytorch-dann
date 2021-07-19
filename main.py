@@ -3,8 +3,6 @@ Main script for models
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
-import time
-
 from train import test, train, params
 from util import utils
 from sklearn.manifold import TSNE
@@ -12,7 +10,7 @@ from sklearn.manifold import TSNE
 import torch
 import torch.nn as nn
 import numpy as np
-import argparse, sys, os
+import argparse, sys
 
 
 def visualize_performance(feature_extractor, class_classifier, domain_classifier, src_test_dataloader,
@@ -138,11 +136,8 @@ def main(args):
     # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},
                                  {'params': label_predictor.parameters()},
-                                 {'params': domain_classifier.parameters()}], lr=params.learning_rate, momentum=0.9)
-    # 尝试亚当优化器 也许是我用错了，狗屎一样。
-    # optimizer = torch.optim.Adam([{'params': feature_extractor.parameters()},
-    #                               {'params': label_predictor.parameters()},
-    #                               {'params': domain_classifier.parameters()}], lr=params.learning_rate)
+                                 {'params': domain_classifier.parameters()}], lr=params.learning_rate, momentum=0.9,
+                                weight_decay=0.0001)
 
     for epoch in range(params.epochs):
         print('Epoch: {}'.format(epoch))
@@ -166,17 +161,13 @@ def parse_arguments(argv):
     """
     parser = argparse.ArgumentParser()
 
-    parser.add_argument('--source_domain', type=str, default=params.source_domain, help='Choose source domain. 选择源域。')
-
-    parser.add_argument('--target_domain', type=str, default=params.target_domain, help='Choose target domain. 选择目标域。')
-
     parser.add_argument('--fig_mode', type=str, default=params.fig_mode, help='Plot experiment '
                                                                               'figures.有两个选项，一是save，二是display（不保存）。')
 
     parser.add_argument('--save_dir', type=str, default=params.save_dir, help='Path to save plotted images. ')
 
     parser.add_argument('--training_mode', type=str, default=params.training_mode, help='Choose a mode to train the '
-                                                                                        'model. 训练模型')
+                                                                                        'model. 训练的模型')
 
     parser.add_argument('--max_epoch', type=int, default=params.epochs, help='The max number of epochs.最大训练轮数。')
 

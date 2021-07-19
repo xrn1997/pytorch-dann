@@ -42,11 +42,11 @@ def test(feature_extractor, class_classifier, domain_classifier, source_dataload
             src_labels = Variable(torch.zeros((input1.size()[0])).type(torch.LongTensor))
 
         output1 = class_classifier(feature_extractor(input1))
-        pred1 = output1.data.max(1, keepdim = True)[1]
+        pred1 = output1.data.max(1, keepdim=True)[1]
         source_correct += pred1.eq(label1.data.view_as(pred1)).cpu().sum()
 
         src_preds = domain_classifier(feature_extractor(input1), constant)
-        src_preds = src_preds.data.max(1, keepdim= True)[1]
+        src_preds = src_preds.data.max(1, keepdim=True)[1]
         src_correct += src_preds.eq(src_labels.data.view_as(src_preds)).cpu().sum()
 
     for batch_idx, tdata in enumerate(target_dataloader):
@@ -78,5 +78,7 @@ def test(feature_extractor, class_classifier, domain_classifier, source_dataload
         source_correct, len(source_dataloader.dataset), 100. * float(source_correct) / len(source_dataloader.dataset),
         target_correct, len(target_dataloader.dataset), 100. * float(target_correct) / len(target_dataloader.dataset),
         domain_correct, len(source_dataloader.dataset) + len(target_dataloader.dataset),
-        100. * float(domain_correct) / (len(source_dataloader.dataset) + len(target_dataloader.dataset))
+                                                        100. * float(domain_correct) / (
+                                                                len(source_dataloader.dataset) + len(
+                                                            target_dataloader.dataset))
     ))

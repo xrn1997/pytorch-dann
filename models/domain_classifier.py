@@ -1,50 +1,29 @@
 import torch.nn as nn
-import torch.nn.functional as f
-from models.grad_reverse import GradReverse
+import models.block as mb
 
 
-class DomainClassifier(nn.Module):
-    """
-    域鉴别器
-    """
+class MD(nn.Module):
 
-    def __init__(self):
-        super(DomainClassifier, self).__init__()
-        # self.linear1 = nn.Linear(50 * 4 * 4, 100)
-        # self.bn1 = nn.BatchNorm1d(100)
-        # self.linear2 = nn.Linear(100, 2)
-        self.fc1 = nn.Linear(48 * 4 * 4, 100)
-        self.fc2 = nn.Linear(100, 2)
+    def _init_(self):
+        super(MD, self).__init__()
+        self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size={3, 3}, padding=1)
+        self.max_pool = mb.MaxPooling(num_feature=32)
+        self.block2 = mb.ConvBlock(in_channels=32, out_channels=64, kernel_size={3, 3}, padding=1)
+        self.avg_pool2d = nn.AvgPool2d(kernel_size={2, 2})
+        self.bn = nn.BatchNorm1d(64)
+        self.soft_max = nn.Softmax()
 
-    def forward(self, x, constant):
-        x = GradReverse.grad_reverse(x, constant)
-        # out = f.relu(self.bn1(self.linear1(input)))
-        # out = f.log_softmax(self.linear2(out), 1)
-        out = f.relu(self.fc1(x))
-        out = f.log_softmax(self.fc2(out), 1)
+        self.fc = nn.Linear(64 * 3 * 3, 32)
 
-        return out
+    def forward(self, x):
+        batch_size = x.size(0)
+        x = self.block1(x)
+        x = self.max_pool(x)
 
-
-class SVHNDomainClassifier(nn.Module):
-    """
-    SVHN域鉴别器
-    """
-
-    def __init__(self):
-        super(SVHNDomainClassifier, self).__init__()
-        self.fc1 = nn.Linear(128 * 3 * 3, 1024)
-        self.bn1 = nn.BatchNorm1d(1024)
-        self.fc2 = nn.Linear(1024, 1024)
-        self.bn2 = nn.BatchNorm1d(1024)
-        self.fc3 = nn.Linear(1024, 2)
-
-    def forward(self, x, constant):
-        x = GradReverse.grad_reverse(x, constant)
-        out = f.relu(self.bn1(self.fc1(x)))
-        out = f.dropout(out)
-        out = f.relu(self.bn2(self.fc2(out)))
-        out = f.dropout(out)
-        out = self.fc3(out)
-
-        return f.log_softmax(out, 1)
+        x = self.block2(x)
+        x = self.avg_pool2d(x)
+        x = self.bn(x)
+        x = self.soft_max(x)
+        x = x.view(batch_size, -1)
+        x = self.fc(x)
+        return x

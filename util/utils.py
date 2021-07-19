@@ -1,8 +1,6 @@
 from torch.utils.data import DataLoader
 from torchvision import datasets, transforms
-from data import syn_dig
 from train import params
-import torch
 import torchvision
 import numpy as np
 import os, time
@@ -31,14 +29,6 @@ def get_train_loader(dataset):
                                 shuffle=True,  # shuffle的作用是乱序，先顺序读取，再乱序索引。
                                 num_workers=3,  # 线程数
                                 pin_memory=True)
-        '''
-      pin_memory就是锁页内存。
-      创建DataLoader时，设置pin_memory=True，则意味着生成的Tensor数据最开始是属于内存中的锁页内存，这样将内存的Tensor转义到GPU的显存就会更快一些。
-      主机中的内存，有两种存在方式，一是锁页，二是不锁页，锁页内存存放的内容在任何情况下都不会与主机的虚拟内存进行交换（注：虚拟内存就是硬盘），
-      而不锁页内存在主机内存不足时，数据会存放在虚拟内存中。显卡中的显存全部是锁页内存,当计算机的内存充足的时候，可以设置pin_memory=True。
-      当系统卡住，或者交换内存使用过多的时候，设置pin_memory=False。因为pin_memory与电脑硬件性能有关，pytorch开发者不能确保每一个炼丹玩家都有高端设备，
-      因此pin_memory默认为False。
-      '''
     elif dataset == 'MNIST_M':
         transform = transforms.Compose([
             transforms.RandomCrop(28),  # 随机长宽比裁剪
@@ -50,37 +40,6 @@ def get_train_loader(dataset):
                                 batch_size=params.batch_size,
                                 shuffle=True,
                                 num_workers=3,
-                                pin_memory=True)
-    elif dataset == 'SVHN':
-        transform = transforms.Compose([
-            transforms.RandomCrop(28),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
-        ])
-
-        data1 = datasets.SVHN(root=params.svhn_path, split='train', transform=transform, download=True)
-        data2 = datasets.SVHN(root=params.svhn_path, split='extra', transform=transform, download=True)
-
-        data = torch.utils.data.ConcatDataset((data1, data2))  # 连接多个数据集
-
-        dataloader = DataLoader(dataset=data,
-                                batch_size=params.batch_size,
-                                shuffle=True,
-                                num_workers=2,
-                                pin_memory=True)
-    elif dataset == 'SynDig':
-        transform = transforms.Compose([
-            transforms.RandomCrop(28),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
-        ])
-
-        data = syn_dig.SynDig(root=params.synth_path, split='train', transform=transform, is_download=True)
-
-        dataloader = DataLoader(dataset=data,
-                                batch_size=params.batch_size,
-                                shuffle=True,
-                                num_workers=2,
                                 pin_memory=True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
@@ -122,34 +81,6 @@ def get_test_loader(dataset):
                                 batch_size=params.batch_size,
                                 shuffle=True,
                                 num_workers=3,
-                                pin_memory=True)
-    elif dataset == 'SVHN':
-        transform = transforms.Compose([
-            transforms.CenterCrop(28),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
-        ])
-
-        data = datasets.SVHN(root=params.svhn_path, split='test', transform=transform, download=True)
-
-        dataloader = DataLoader(dataset=data,
-                                batch_size=params.batch_size,
-                                shuffle=True,
-                                num_workers=2,
-                                pin_memory=True)
-    elif dataset == 'SynDig':
-        transform = transforms.Compose([
-            transforms.CenterCrop(28),
-            transforms.ToTensor(),
-            transforms.Normalize(mean=params.dataset_mean, std=params.dataset_std)
-        ])
-
-        data = syn_dig.SynDig(root=params.synth_path, split='test', transform=transform, is_download=True)
-
-        dataloader = DataLoader(dataset=data,
-                                batch_size=params.batch_size,
-                                shuffle=True,
-                                num_workers=2,
                                 pin_memory=True)
     else:
         raise Exception('There is no dataset named {}'.format(str(dataset)))
@@ -242,14 +173,6 @@ def plot_embedding(loc, y, d, title=None, img_name=None):
 
     # Plot colors numbers
     plt.figure(figsize=(10, 10))
-    """
-     plt.subplot(nrows, ncols, index, **kwargs)
-     nrows, ncols, index：位置是由三个整型数值构成，第一个代表行数，第二个代表列数，第三个代表索引位置。
-     举个列子：plt.subplot(2, 3, 5) 和 plt.subplot(235) 是一样一样的。2代表2行3代表3列，2行3列意味着有6个子图，5意味着是代码是绘制
-     第五个子图。
-     projection 可选参数：可以选择子图的类型，比如选择polar，就是一个极点图。默认是none就是一个线形图。
-     polar 可选参数：如果选择true，就是一个极点图，上一个参数也能实现该功能。
-   """
     ax = plt.subplot(111)
 
     for i in range(loc.shape[0]):
