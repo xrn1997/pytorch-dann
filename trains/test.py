@@ -5,7 +5,7 @@ import torch
 from torch.autograd import Variable
 import numpy as np
 
-from train import params
+from trains import params
 
 
 def test(feature_extractor, class_classifier, domain_classifier, source_dataloader, target_dataloader):
