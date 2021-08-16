@@ -49,7 +49,7 @@ class UJIndoorLocDataSet(Dataset):
         self.ap_len = all_data.shape[1] - 9  # AP数量 520
         self._rss = torch.from_numpy(all_data[:, :-9])  # RSS 520维向量
         self._position = all_data[:, -9:-7]  # 经度、纬度
-        self._space = all_data[:, -7:-3]  # 楼层 、建筑、空间、相对位置（门内1、门外2）
+        self._space = all_data[:, -7:-3]  # 楼层 、楼、房间、相对位置（门内1、门外2）
         self._collector = all_data[:, -3:-1]  # 用户、手机
         self._date = all_data[:, -1:]  # 时间戳，如：1371713733
         # 10位时间戳只保留前八位

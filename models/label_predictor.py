@@ -11,7 +11,7 @@ class M1(nn.Module):
         self.block2 = mb.ConvBlock(in_channels=32, out_channels=64, kernel_size={3, 3}, padding=1)
         self.avg_pool2d = nn.AvgPool2d(kernel_size={2, 2})
         self.bn = nn.BatchNorm1d(64)
-        self.soft_max = nn.Softmax()
+        self.soft_max = nn.LogSoftmax()
 
         self.fc = nn.Linear(64 * 3 * 3, 32)
 
