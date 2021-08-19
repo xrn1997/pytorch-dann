@@ -11,23 +11,20 @@ import models
 
 def main():
     # prepare the source data and target data
-    train_dataloader = utils.get_data_loader(params.dataset_name, params.dataset_path, train=True)
-    update_dataloader = utils.get_data_loader(params.dataset_name, params.dataset_path)
-
+    train_dataloader, domain_size = utils.get_data_loader(params.dataset_name, params.dataset_path, train=True)
     # init models
     feature_extractor = models.ME()
     label_predictor_1 = models.M1()
     label_predictor_2 = models.M2()
     label_predictor_3 = models.M3()
-    domain_classifier = models.MD()
+    domain_classifier = models.MD(domain_size)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    feature_extractor.to(device)
+    feature_extractor = feature_extractor.to(device)
     label_predictor_1.to(device)
     label_predictor_2.to(device)
     label_predictor_3.to(device)
     domain_classifier.to(device)
-
     # init criterions 损失函数
     label_criterion = nn.NLLLoss(reduction='sum')
     domain_criterion = nn.NLLLoss(reduction='sum')
@@ -48,7 +45,7 @@ def main():
                     label_predictor_1, label_predictor_2, label_predictor_3,  # 标签预测
                     domain_classifier,  # 域鉴别
                     label_criterion, domain_criterion,  # 损失
-                    train_dataloader, update_dataloader,  # dataloader
+                    train_dataloader,  # dataloader
                     optimizer,  # 优化器
                     epoch  # 轮数
                     )

@@ -7,7 +7,7 @@ from data import fp_dataset as fp
 def get_data_loader(dataset, dataset_path, train=True):
     """
     获得不同数据集的DataLoader
-    :return: dataloader
+    :return: dataloader数据加载集,domain_size域的数量
     """
     if dataset == 'Tampere':
         data = fp.TampereDataset(dataset_path, train=train)
@@ -19,7 +19,7 @@ def get_data_loader(dataset, dataset_path, train=True):
                       batch_size=params.batch_size,  # 每次处理的batch大小
                       shuffle=True,  # shuffle的作用是乱序，先顺序读取，再乱序索引。
                       num_workers=3,  # 线程数
-                      pin_memory=True)
+                      pin_memory=True), data.domain_size
 
 
 def optimizer_scheduler(optimizer, p):

@@ -1,3 +1,5 @@
+import time
+
 import numpy as np
 import torch
 import pandas as pd
@@ -14,9 +16,9 @@ class TampereDataset(Dataset):
         else:
             train_path = "Test"
 
-        rss = np.loadtxt(dataset_path + train_path + "_rss_21Aug17.csv", delimiter=',', dtype=int)
+        rss = np.loadtxt(dataset_path + train_path + "_rss_21Aug17.csv", delimiter=',', dtype=np.float32)
 
-        self._rss_len = rss.shape[0]  # RSS指纹数量
+        self._data_len = rss.shape[0]  # RSS指纹数量
         self.ap_len = rss.shape[1]  # AP数量 992
         self._rss = torch.from_numpy(rss)  # RSS 992维向量
         self._coordinate = np.loadtxt(dataset_path + train_path + "_coordinates_21Aug17.csv", delimiter=',',
@@ -26,14 +28,30 @@ class TampereDataset(Dataset):
         self._device = np.loadtxt(dataset_path + train_path + "_device_21Aug17.csv", delimiter=',',
                                   dtype=str)  # 采集设备型号，如：HUAWEI T1 7.0
 
-        temp = pd.DataFrame({'date': [i[:-6] for i in self._date], 'device': self._device})
+        self.date_domain = []
+        for i in self._date:
+            if int(i[-8:-6]) < 11:
+                self.date_domain.append("A")
+            elif int(i[-8:-6]) < 14:
+                self.date_domain.append("B")
+            else:
+                self.date_domain.append("C")
+        temp = pd.DataFrame({'date': self.date_domain, 'device': self._device})
         self._one_hot_label = pd.get_dummies(temp, columns=temp.columns)
+        self.domain_size = (self._one_hot_label.shape[1] - 3) * 3  # 域的数量
 
     def __len__(self):
-        return self._rss_len
+        return self._data_len
 
     def __getitem__(self, index):
-        return self._rss[index], self._coordinate[index], self._one_hot_label.values[index]
+        # 将1维RSS向量转换为2维RSS向量
+        rss_item = self._rss[index].tolist()
+        mx = np.matrix(self._rss[index].tolist() * self.ap_len, dtype=np.float32).reshape(self.ap_len,
+                                                                                          self.ap_len).transpose()
+        for i in range(0, self.ap_len):
+            mx[:, i] = (mx[:, i] - rss_item[i]) / rss_item[i]
+        result = mx.A.reshape(1, self.ap_len, self.ap_len)  # 通道数为 1
+        return result, self._coordinate[index], self._one_hot_label.values[index]
 
 
 class UJIndoorLocDataSet(Dataset):
@@ -45,39 +63,57 @@ class UJIndoorLocDataSet(Dataset):
 
         all_data = np.loadtxt(dataset_path + train_path, delimiter=',', skiprows=1)
 
-        self._rss_len = all_data.shape[0]  # RSS指纹数量
+        self._data_len = all_data.shape[0]  # RSS指纹数量
         self.ap_len = all_data.shape[1] - 9  # AP数量 520
         self._rss = torch.from_numpy(all_data[:, :-9])  # RSS 520维向量
         self._position = all_data[:, -9:-7]  # 经度、纬度
         self._space = all_data[:, -7:-3]  # 楼层 、楼、房间、相对位置（门内1、门外2）
         self._collector = all_data[:, -3:-1]  # 用户、手机
-        self._date = all_data[:, -1:]  # 时间戳，如：1371713733
-        # 10位时间戳只保留前八位
-        temp = pd.DataFrame(
-            {'date': [int(i[0] / 100) for i in self._date], 'device': [int(i[1]) for i in self._collector]})
-        self._one_hot_label = pd.get_dummies(temp, columns=temp.columns)
+        self._date = all_data[:, -1:].reshape(self._data_len)  # 时间戳，如：1371713733
+        self.date_domain = []
+        for i in self._date:
+            date = time.strftime("%Y-%m-%d %H:%M:%S", time.localtime(i))
+            if int(date[-8:-6]) < 16:
+                self.date_domain.append("A")
+            elif int(date[-8:-6]) < 19:
+                self.date_domain.append("B")
+            else:
+                self.date_domain.append("C")
+        self.temp = pd.DataFrame(
+            {'date': self.date_domain, 'device': [int(i[1]) for i in self._collector]})
+        self._one_hot_label = pd.get_dummies(self.temp, columns=self.temp.columns)
+        self.domain_size = (self._one_hot_label.shape[1] - 3) * 3  # 域的数量
 
     def __len__(self):
-        return self._rss_len
+        return self._data_len
 
     def __getitem__(self, index):
-        return self._rss[index], self._position[index], self._one_hot_label.values[index]
+        # 将1维RSS向量转换为2维RSS向量
+        rss_item = self._rss[index].tolist()
+        mx = np.matrix(rss_item * self.ap_len).reshape(self.ap_len, self.ap_len).transpose()
+        for i in range(0, self.ap_len):
+            mx[:, i] = (mx[:, i] - rss_item[i]) / rss_item[i]
+        result = mx.A.reshape(1, self.ap_len, self.ap_len)  # 通道数为 1
+        result = torch.from_numpy(result)
+        return result, self._position[index], self._one_hot_label.values[index]
 
-    #  测试用代码
 
-
+#  测试用代码
 if __name__ == '__main__':
     tampere_path = "./Tampere/DISTRIBUTED_OPENSOURCE_version2/FINGERPRINTING_DB/"
     uj_indoor_loc_path = "./UJIndoorLoc/"
 
-    # dataset = TampereDataset(tampere_path, train=True)
-    # dataset = TampereDataset(tampere_path, train=False)
-    dataset = UJIndoorLocDataSet(uj_indoor_loc_path, train=False)
-
-    train_loader = DataLoader(dataset, batch_size=1)
-    print(len(dataset))
-    print(dataset.ap_len)
-
-    for data in train_loader:
-        print(data)
+    dataset = TampereDataset(tampere_path, train=True)
+    dataloader=DataLoader(dataset=dataset,
+                          batch_size=2,
+                          shuffle=True,
+                          num_workers=3,
+                          pin_memory=True)
+    for data in dataloader:
+        print(data[0].shape)
         break
+    print(dataset.domain_size)
+    dataset = TampereDataset(tampere_path, train=False)
+    print(dataset.domain_size)
+    dataset = UJIndoorLocDataSet(uj_indoor_loc_path, train=False)
+    print(dataset.domain_size)
