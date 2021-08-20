@@ -46,8 +46,7 @@ class TampereDataset(Dataset):
     def __getitem__(self, index):
         # 将1维RSS向量转换为2维RSS向量
         rss_item = self._rss[index].tolist()
-        mx = np.matrix(self._rss[index].tolist() * self.ap_len, dtype=np.float32).reshape(self.ap_len,
-                                                                                          self.ap_len).transpose()
+        mx = np.matrix(rss_item * self.ap_len, dtype=np.float32).reshape(self.ap_len, self.ap_len).transpose()
         for i in range(0, self.ap_len):
             mx[:, i] = (mx[:, i] - rss_item[i]) / rss_item[i]
         result = mx.A.reshape(1, self.ap_len, self.ap_len)  # 通道数为 1
@@ -90,7 +89,7 @@ class UJIndoorLocDataSet(Dataset):
     def __getitem__(self, index):
         # 将1维RSS向量转换为2维RSS向量
         rss_item = self._rss[index].tolist()
-        mx = np.matrix(rss_item * self.ap_len).reshape(self.ap_len, self.ap_len).transpose()
+        mx = np.matrix(rss_item * self.ap_len, dtype=np.float32).reshape(self.ap_len, self.ap_len).transpose()
         for i in range(0, self.ap_len):
             mx[:, i] = (mx[:, i] - rss_item[i]) / rss_item[i]
         result = mx.A.reshape(1, self.ap_len, self.ap_len)  # 通道数为 1
@@ -104,13 +103,13 @@ if __name__ == '__main__':
     uj_indoor_loc_path = "./UJIndoorLoc/"
 
     dataset = TampereDataset(tampere_path, train=True)
-    dataloader=DataLoader(dataset=dataset,
-                          batch_size=2,
-                          shuffle=True,
-                          num_workers=3,
-                          pin_memory=True)
+    dataloader = DataLoader(dataset=dataset,
+                            batch_size=2,
+                            shuffle=True,
+                            num_workers=3,
+                            pin_memory=True)
     for data in dataloader:
-        print(data[0].shape)
+        print(data[2])
         break
     print(dataset.domain_size)
     dataset = TampereDataset(tampere_path, train=False)

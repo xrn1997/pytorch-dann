@@ -10,7 +10,7 @@ import models
 
 
 def main():
-    # prepare the source data and target data
+    # prepare the source data and target1 data
     train_dataloader, domain_size = utils.get_data_loader(params.dataset_name, params.dataset_path, train=True)
     # init models
     feature_extractor = models.ME()
@@ -27,7 +27,7 @@ def main():
     domain_classifier.to(device)
     # init criterions 损失函数
     label_criterion = nn.NLLLoss(reduction='sum')
-    domain_criterion = nn.NLLLoss(reduction='sum')
+    domain_criterion = models.OneHotNLLLoss(reduction='sum')
 
     # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},

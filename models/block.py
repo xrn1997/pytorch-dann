@@ -5,14 +5,14 @@ class ConvBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size, padding):
         super(ConvBlock, self).__init__()
-        self.conv2d_1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                  padding=padding, bias=True)
-        self.conv2d_2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                  padding=padding, bias=True)
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                               padding=padding, bias=True)
+        self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size,
+                               padding=padding, bias=True)
 
     def forward(self, x):
-        x = self.conv2d_1(x)
-        x = self.conv2d_2(x)
+        x = self.conv1(x)
+        x = self.conv2(x)
         return x
 
 
@@ -20,14 +20,14 @@ class ResidualBlock(nn.Module):
 
     def __init__(self, in_channels, out_channels, kernel_size, padding):
         super(ResidualBlock, self).__init__()
-        self.conv2d_1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                  padding=padding, bias=True)
-        self.conv2d_2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size,
-                                  padding=padding, bias=True)
+        self.conv1 = nn.Conv2d(in_channels=in_channels, out_channels=out_channels, kernel_size=kernel_size,
+                               padding=padding, bias=True)
+        self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size,
+                               padding=padding, bias=True)
 
     def forward(self, x):
-        x = self.conv2d_1(x)
-        y = self.conv2d_2(x)
+        x = self.conv1(x)
+        y = self.conv2(x)
         return x + y
 
 

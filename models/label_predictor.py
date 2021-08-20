@@ -23,9 +23,10 @@ class M1(nn.Module):
         x = self.block2(x)
         x = self.avg_pool2d(x)
         x = self.bn(x)
-        x = self.soft_max(x)
+
         x = x.view(batch_size, -1)
         x = self.fc(x)
+        x = self.soft_max(x)
         return x
 
 
@@ -50,9 +51,10 @@ class M2(nn.Module):
         x = self.block2(x)
         x = self.avg_pool2d(x)
         x = self.bn(x)
-        x = self.soft_max(x)
+
         x = x.view(batch_size, -1)
         x = self.fc(x)
+        x = self.soft_max(x)
         return x
 
 
@@ -77,7 +79,8 @@ class M3(nn.Module):
         x = self.block2(x)
         x = self.avg_pool2d(x)
         x = self.bn(x)
-        x = self.soft_max(x)
+
         x = x.view(batch_size, -1)
         x = self.fc(x)
+        x = self.soft_max(x)
         return x
