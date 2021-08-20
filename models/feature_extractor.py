@@ -3,6 +3,9 @@ import models.block as mb
 
 
 class ME(nn.Module):
+    """
+    特征提取模型ME
+    """
     def __init__(self):
         super(ME, self).__init__()
         self.conv_block = mb.ConvBlock(kernel_size=(3, 3), out_channels=32, padding=1, in_channels=1)

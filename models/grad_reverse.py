@@ -4,7 +4,7 @@ from torch.autograd import Function
 
 class GradReverse(Function):
     """
-    Extension of grad reverse layer
+    梯度反转层GRL
     """
 
     @staticmethod

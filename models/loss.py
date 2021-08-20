@@ -4,6 +4,10 @@ import torch.nn as nn
 
 
 class OneHotNLLLoss(nn.Module):
+    """
+    target为one-hot的交叉熵损失函数
+    """
+
     def __init__(self, reduction='mean'):
         super(OneHotNLLLoss, self).__init__()
         self.reduction = reduction

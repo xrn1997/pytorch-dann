@@ -4,7 +4,9 @@ from models.grad_reverse import GradReverse
 
 
 class MD(nn.Module):
-
+    """
+    域分类模型MD
+    """
     def __init__(self, d):
         super(MD, self).__init__()
         self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size=(3, 3), padding=1)
@@ -23,7 +25,7 @@ class MD(nn.Module):
         x = self.block2(x)
         x = self.avg_pool2d(x)
         x = self.bn(x)
-        x = self.soft_max(x)
         x = x.view(batch_size, -1)
         x = self.fc(x)
+        x = self.soft_max(x)
         return x

@@ -3,7 +3,9 @@ import models.block as mb
 
 
 class M1(nn.Module):
-
+    """
+    标签预测模型M1
+    """
     def __init__(self):
         super(M1, self).__init__()
         self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size=(3, 3), padding=1)
@@ -31,7 +33,9 @@ class M1(nn.Module):
 
 
 class M2(nn.Module):
-
+    """
+    标签预测模型M2
+    """
     def __init__(self):
         super(M2, self).__init__()
         self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size=(5, 5), padding=2)
@@ -59,7 +63,9 @@ class M2(nn.Module):
 
 
 class M3(nn.Module):
-
+    """
+    标签预测模型M3
+    """
     def __init__(self):
         super(M3, self).__init__()
         self.block1 = mb.ResidualBlock(in_channels=32, out_channels=32, kernel_size=(3, 3), padding=1)

@@ -22,7 +22,7 @@ class TampereDataset(Dataset):
         self.ap_len = rss.shape[1]  # AP数量 992
         self._rss = torch.from_numpy(rss)  # RSS 992维向量
         self._coordinate = np.loadtxt(dataset_path + train_path + "_coordinates_21Aug17.csv", delimiter=',',
-                                      )  # X、Y、Z（相对位置坐标）
+                                      dtype=np.float32)  # X、Y、Z（相对位置坐标）
         self._date = np.loadtxt(dataset_path + train_path + "_date_21Aug17.csv", delimiter=',',
                                 dtype=str)  # 采集日期 ，如：2017/8/19 15:52:25
         self._device = np.loadtxt(dataset_path + train_path + "_device_21Aug17.csv", delimiter=',',
@@ -60,7 +60,7 @@ class UJIndoorLocDataSet(Dataset):
         else:
             train_path = "validationData.csv"
 
-        all_data = np.loadtxt(dataset_path + train_path, delimiter=',', skiprows=1)
+        all_data = np.loadtxt(dataset_path + train_path, delimiter=',', skiprows=1, dtype=np.float32)
 
         self._data_len = all_data.shape[0]  # RSS指纹数量
         self.ap_len = all_data.shape[1] - 9  # AP数量 520
