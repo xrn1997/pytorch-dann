@@ -7,7 +7,7 @@ class M1(nn.Module):
     标签预测模型M1
     """
 
-    def __init__(self, c):
+    def __init__(self, ap_len, position_size):
         super(M1, self).__init__()
         self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size=(3, 3), padding=1)
         self.max_pool = mb.MaxPooling(num_feature=32)
@@ -15,19 +15,18 @@ class M1(nn.Module):
         self.avg_pool2d = nn.AvgPool2d(kernel_size=(2, 2))
         self.bn = nn.BatchNorm2d(64)
         self.soft_max = nn.LogSoftmax(dim=1)
-
-        self.fc = nn.Linear(64 * 3 * 3, c)
+        self.fc = nn.Linear(ap_len * ap_len, position_size)
 
     def forward(self, x):
         batch_size = x.size(0)
         x = self.block1(x)
         x = self.max_pool(x)
-
         x = self.block2(x)
         x = self.avg_pool2d(x)
         x = self.bn(x)
-
+        print(x.shape)
         x = x.view(batch_size, -1)
+        print(x.shape)
         x = self.fc(x)
         x = self.soft_max(x)
         return x
@@ -38,7 +37,7 @@ class M2(nn.Module):
     标签预测模型M2
     """
 
-    def __init__(self, c):
+    def __init__(self, ap_len, position_size):
         super(M2, self).__init__()
         self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size=(5, 5), padding=2)
         self.max_pool = mb.MaxPooling(num_feature=32)
@@ -46,8 +45,7 @@ class M2(nn.Module):
         self.avg_pool2d = nn.AvgPool2d(kernel_size=(2, 2))
         self.bn = nn.BatchNorm2d(64)
         self.soft_max = nn.LogSoftmax(dim=1)
-
-        self.fc = nn.Linear(64 * 5 * 5, c)
+        self.fc = nn.Linear(ap_len * ap_len, position_size)
 
     def forward(self, x):
         batch_size = x.size(0)
@@ -69,7 +67,7 @@ class M3(nn.Module):
     标签预测模型M3
     """
 
-    def __init__(self, c):
+    def __init__(self, ap_len, position_size):
         super(M3, self).__init__()
         self.block1 = mb.ResidualBlock(in_channels=32, out_channels=32, kernel_size=(3, 3), padding=1)
         self.max_pool = mb.MaxPooling(num_feature=32)
@@ -77,8 +75,7 @@ class M3(nn.Module):
         self.avg_pool2d = nn.AvgPool2d(kernel_size=(2, 2))
         self.bn = nn.BatchNorm2d(64)
         self.soft_max = nn.LogSoftmax(dim=1)
-
-        self.fc = nn.Linear(64 * 3 * 3, c)
+        self.fc = nn.Linear(ap_len * ap_len, position_size)
 
     def forward(self, x):
         batch_size = x.size(0)

@@ -11,14 +11,15 @@ import models
 
 def main():
     # prepare the source data and target1 data
-    train_dataloader, domain_size, position_size = utils.get_data_loader(params.dataset_name, params.dataset_path,
-                                                                         train=True)
+    train_dataloader, domain_size, position_size, ap_len = utils.get_data_loader(params.dataset_name,
+                                                                                 params.dataset_path,
+                                                                                 train=True)
     # init models
     feature_extractor = models.ME()
-    label_predictor_1 = models.M1(position_size)
-    label_predictor_2 = models.M2(position_size)
-    label_predictor_3 = models.M3(position_size)
-    domain_classifier = models.MD(domain_size)
+    label_predictor_1 = models.M1(ap_len, position_size)
+    label_predictor_2 = models.M2(ap_len, position_size)
+    label_predictor_3 = models.M3(ap_len, position_size)
+    domain_classifier = models.MD(ap_len, domain_size)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     feature_extractor = feature_extractor.to(device)

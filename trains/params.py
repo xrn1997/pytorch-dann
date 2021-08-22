@@ -2,7 +2,7 @@
 dataset_mean = [0.5]  # 均值
 dataset_std = [0.5]  # 标准差
 learning_rate = 0.1  # 学习率
-batch_size = 1  # batch块大小
+batch_size = 2  # batch块大小
 epochs = 200  # 训练轮数
 gamma = 10  # γ
 theta = 1  # θ

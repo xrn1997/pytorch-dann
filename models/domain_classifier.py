@@ -7,7 +7,8 @@ class MD(nn.Module):
     """
     域分类模型MD
     """
-    def __init__(self, d):
+
+    def __init__(self, ap_len, domain_size):
         super(MD, self).__init__()
         self.block1 = mb.ConvBlock(in_channels=32, out_channels=32, kernel_size=(3, 3), padding=1)
         self.max_pool = mb.MaxPooling(num_feature=32)
@@ -15,7 +16,7 @@ class MD(nn.Module):
         self.avg_pool2d = nn.AvgPool2d(kernel_size=(2, 2))
         self.bn = nn.BatchNorm2d(64)
         self.soft_max = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(64 * 3 * 3, d)
+        self.fc = nn.Linear(ap_len * ap_len, domain_size)
 
     def forward(self, x, constant):
         batch_size = x.size(0)
@@ -26,6 +27,7 @@ class MD(nn.Module):
         x = self.avg_pool2d(x)
         x = self.bn(x)
         x = x.view(batch_size, -1)
+        print(x.shape)
         x = self.fc(x)
         x = self.soft_max(x)
         return x

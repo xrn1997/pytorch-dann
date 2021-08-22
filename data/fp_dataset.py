@@ -118,14 +118,15 @@ if __name__ == '__main__':
     tampere_path = "./Tampere/DISTRIBUTED_OPENSOURCE_version2/FINGERPRINTING_DB/"
     uj_indoor_loc_path = "./UJIndoorLoc/"
 
-    # dataset = TampereDataset(tampere_path, train=True)
-    dataset = TampereDataset(tampere_path, train=False)
+    dataset = TampereDataset(tampere_path, train=True)
+    # dataset = TampereDataset(tampere_path, train=False)
     # dataset = UJIndoorLocDataSet(uj_indoor_loc_path, train=False)
     dataloader = DataLoader(dataset=dataset,
                             batch_size=2,
                             shuffle=True,
                             num_workers=3,
                             pin_memory=True)
+    print("ap_len", dataset.ap_len)
     print("co_size", dataset.co_size)
     print("domain_size", dataset.domain_size)
     for data in dataloader:

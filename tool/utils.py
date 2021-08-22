@@ -19,7 +19,7 @@ def get_data_loader(dataset, dataset_path, train=True):
                       batch_size=params.batch_size,  # 每次处理的batch大小
                       shuffle=True,  # shuffle的作用是乱序，先顺序读取，再乱序索引。
                       num_workers=3,  # 线程数
-                      pin_memory=True), data.domain_size, data.co_size
+                      pin_memory=True), data.domain_size, data.co_size, data.ap_len
 
 
 def optimizer_scheduler(optimizer, p):
