@@ -1,3 +1,4 @@
+import numpy as np
 import torch.nn as nn
 import torch
 import models
@@ -39,7 +40,7 @@ if __name__ == '__main__':
     '''
     # 结论：nn.LogSoftmax = torch.log(nn.Softmax)
 
-    loss = nn.NLLLoss(reduction='sum')
+    loss = nn.NLLLoss()
     target1 = torch.tensor([0, 1, 2])  # 随便写一个目标tensor
     print(loss(data, target1))  # NLLLoss原始损失
     '''
@@ -63,7 +64,7 @@ if __name__ == '__main__':
 
     target2 = torch.tensor([[1, 0, 0], [0, 1, 0], [0, 0, 1]])  # one-hot 标签
     custom_loss = -torch.sum(slm(data) * target2) / 3
-    test2 = models.OneHotNLLLoss(reduction="sum")
+    test2 = models.OneHotNLLLoss()
     custom_loss2 = test2(slm(data), target2)
     print(custom_loss)
     print(custom_loss2)
@@ -71,13 +72,14 @@ if __name__ == '__main__':
     程序运行的一次结果
     tensor(1.5741)
     '''
+    print('*' * 50)
     # Tensor与tensor的区别
     A = torch.Tensor([1, 2])  # Tensor float32
     print(A.dtype)
 
     B = torch.tensor([1, 2])  # tensor int
     print(B.dtype)
-
+    print('*' * 50)
     # 测试字典
     dic = {}
     data = [[1, 0, 1], [0, 1, 0], [1, 0, 1]]
@@ -92,7 +94,7 @@ if __name__ == '__main__':
             position_label.append(list(dic.keys())[list(dic.values()).index(d)])
     print(dic)
     print(position_label)
-
+    print('*' * 50)
     # tensor 测试
     c = torch.tensor([1, 2, 3])
     print(c.shape)
@@ -100,3 +102,8 @@ if __name__ == '__main__':
     print(d.shape)
     t = torch.cat((c, d), 0)
     print(t)
+    print('*' * 50)
+    print(np.log(0.2213))
+    print(np.exp(-1.508))
+    print(np.exp(-200))
+

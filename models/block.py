@@ -46,3 +46,18 @@ class MaxPooling(nn.Module):
         x = self.bn(x)
         x = self.leaky_relu(x)
         return x
+
+
+class AvgPooling(nn.Module):
+
+    def __init__(self, num_feature):
+        super(AvgPooling, self).__init__()
+        self.avg_pool = nn.AvgPool2d(kernel_size=(8, 8))
+        self.bn = nn.BatchNorm2d(num_feature)
+        self.leaky_relu = nn.LeakyReLU(negative_slope=0.1)
+
+    def forward(self, x):
+        x = self.avg_pool(x)
+        x = self.bn(x)
+        x = self.leaky_relu(x)
+        return x

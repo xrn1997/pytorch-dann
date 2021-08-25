@@ -131,6 +131,5 @@ if __name__ == '__main__':
     print("domain_size", dataset.domain_size)
     for data in dataloader:
         print(data[1].dtype)
-        print(data[3].shape)
         break
     print(dataset.domain_size)

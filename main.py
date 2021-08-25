@@ -2,6 +2,9 @@
 主程序
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
+
+import numpy as np
+
 from trains import test, train, params
 from tool import utils
 import torch
@@ -16,10 +19,24 @@ def main():
                                                                                  train=True)
     # init models
     feature_extractor = models.ME()
+    para = sum([np.prod(list(p.size())) for p in feature_extractor.parameters()])
+    print('Model {} : params: {:4f}M'.format("feature_extractor", para / 500 / 500))
+
     label_predictor_1 = models.M1(ap_len, position_size)
+    para = sum([np.prod(list(p.size())) for p in label_predictor_1.parameters()])
+    print('Model {} : params: {:4f}M'.format("label_predictor_1", para / 500 / 500))
+
     label_predictor_2 = models.M2(ap_len, position_size)
+    para = sum([np.prod(list(p.size())) for p in label_predictor_2.parameters()])
+    print('Model {} : params: {:4f}M'.format("label_predictor_2", para / 500 / 500))
+
     label_predictor_3 = models.M3(ap_len, position_size)
+    para = sum([np.prod(list(p.size())) for p in label_predictor_3.parameters()])
+    print('Model {} : params: {:4f}M'.format("label_predictor_3", para / 500 / 500))
+
     domain_classifier = models.MD(ap_len, domain_size)
+    para = sum([np.prod(list(p.size())) for p in domain_classifier.parameters()])
+    print('Model {} : params: {:4f}M'.format("domain_classifier", para / 500 / 500))
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     feature_extractor = feature_extractor.to(device)
@@ -28,8 +45,8 @@ def main():
     label_predictor_3.to(device)
     domain_classifier.to(device)
     # init criterions 损失函数
-    label_criterion = nn.NLLLoss(reduction='sum')
-    domain_criterion = models.OneHotNLLLoss(reduction='sum')
+    label_criterion = nn.NLLLoss()
+    domain_criterion = models.OneHotNLLLoss()
 
     # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},

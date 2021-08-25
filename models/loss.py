@@ -16,7 +16,7 @@ class OneHotNLLLoss(nn.Module):
         if self.reduction == 'sum':
             n = 1
         elif self.reduction == 'mean':
-            n = np.array(y).shape[0]
+            n = len(y)
         else:
             raise Exception('reduction 参数错误')
         result = -torch.sum(x * y) / n
