@@ -38,20 +38,6 @@ def train(feature_extractor,
     label_predictor_3.train()
     domain_classifier.train()
 
-    # 加载已保存的参数
-    if not os.path.exists(params.save_dir):
-        os.mkdir(params.save_dir)
-    if not os.path.exists(params.train_params_save_path):
-        os.mkdir(params.train_params_save_path)
-    if os.path.exists(params.train_params_save_path + "/fe.pth"):
-        feature_extractor.load_state_dict(torch.load(params.train_params_save_path + "/fe.pth"))
-    if os.path.exists(params.train_params_save_path + "/dc.pth"):
-        domain_classifier.load_state_dict(torch.load(params.train_params_save_path + "/dc.pth"))
-    if os.path.exists(params.train_params_save_path + "/lp.pth"):
-        label_predictor_1.load_state_dict(torch.load(params.train_params_save_path + "/lp1.pth"))
-        label_predictor_2.load_state_dict(torch.load(params.train_params_save_path + "/lp2.pth"))
-        label_predictor_3.load_state_dict(torch.load(params.train_params_save_path + "/lp3.pth"))
-
     # steps
     start_steps = epoch * len(source_dataloader)
     total_steps = params.epochs * len(source_dataloader)
@@ -93,10 +79,14 @@ def train(feature_extractor,
 
         # print loss
         if (batch_idx + 1) % 10 == 0:
-            print('Loss: {:.6f}\tClass Loss: {:.6f}\tDomain Loss: {:.6f}'.format(loss.item(),
-                                                                                 class_loss.item(),
-                                                                                 domain_loss.item()
-                                                                                 ))
+            print('[{}/{} ({:.0f}%)]\tLoss: {:.6f}\tClass Loss: {:.6f}\tDomain Loss: {:.6f}'.format(
+                batch_idx * len(source_rss),
+                len(source_dataloader.dataset),
+                100. * batch_idx / len(source_dataloader),
+                loss.item(),
+                class_loss.item(),
+                domain_loss.item()
+                ))
 
     torch.save(feature_extractor.state_dict(), params.train_params_save_path + "/fe.pth")
     torch.save(domain_classifier.state_dict(), params.train_params_save_path + "/dc.pth")

@@ -3,6 +3,8 @@
 """
 from __future__ import absolute_import, division, print_function, unicode_literals
 
+import os
+
 import numpy as np
 
 from trains import test, train, params
@@ -48,6 +50,20 @@ def main():
     label_criterion = nn.NLLLoss()
     domain_criterion = models.OneHotNLLLoss()
 
+    # 加载已保存的参数
+    if not os.path.exists(params.save_dir):
+        os.mkdir(params.save_dir)
+    if not os.path.exists(params.train_params_save_path):
+        os.mkdir(params.train_params_save_path)
+    if os.path.exists(params.train_params_save_path + "/fe.pth"):
+        feature_extractor.load_state_dict(torch.load(params.train_params_save_path + "/fe.pth"))
+    if os.path.exists(params.train_params_save_path + "/dc.pth"):
+        domain_classifier.load_state_dict(torch.load(params.train_params_save_path + "/dc.pth"))
+    if os.path.exists(params.train_params_save_path + "/lp.pth"):
+        label_predictor_1.load_state_dict(torch.load(params.train_params_save_path + "/lp1.pth"))
+        label_predictor_2.load_state_dict(torch.load(params.train_params_save_path + "/lp2.pth"))
+        label_predictor_3.load_state_dict(torch.load(params.train_params_save_path + "/lp3.pth"))
+
     # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},
                                  {'params': label_predictor_1.parameters()},
@@ -68,6 +84,11 @@ def main():
                     optimizer,  # 优化器
                     epoch  # 轮数
                     )
+        test.test(feature_extractor,  # 特征提取
+                  label_predictor_1, label_predictor_2, label_predictor_3,  # 标签预测
+                  domain_classifier,  # 域鉴别
+                  train_dataloader,  # dataloader
+                  )
 
 
 if __name__ == '__main__':

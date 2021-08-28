@@ -58,6 +58,9 @@ class TampereDataset(Dataset):
         return self._data_len
 
     def __getitem__(self, index):
+        """
+        :return: 1.RSS二维向量；2.位置相对坐标；3.位置标签；4.one-hot域标签,one-hot标签前三个为时间，后面为设备。
+        """
         # 将1维RSS向量转换为2维RSS向量
         rss_item = self._rss[index].tolist()
         mx = np.matrix(rss_item * self.ap_len, dtype=np.float32).reshape(self.ap_len, self.ap_len).transpose()
@@ -131,5 +134,6 @@ if __name__ == '__main__':
     print("domain_size", dataset.domain_size)
     for data in dataloader:
         print(data[1].dtype)
+        print(data[3].shape)
         break
     print(dataset.domain_size)

@@ -1,3 +1,6 @@
+"""
+测试代码块的地方，尝试各种函数，与程序本体无关。
+"""
 import numpy as np
 import torch.nn as nn
 import torch
@@ -79,6 +82,7 @@ if __name__ == '__main__':
 
     B = torch.tensor([1, 2])  # tensor int
     print(B.dtype)
+
     print('*' * 50)
     # 测试字典
     dic = {}
@@ -94,6 +98,7 @@ if __name__ == '__main__':
             position_label.append(list(dic.keys())[list(dic.values()).index(d)])
     print(dic)
     print(position_label)
+
     print('*' * 50)
     # tensor 测试
     c = torch.tensor([1, 2, 3])
@@ -102,8 +107,31 @@ if __name__ == '__main__':
     print(d.shape)
     t = torch.cat((c, d), 0)
     print(t)
+
     print('*' * 50)
     print(np.log(0.2213))
     print(np.exp(-1.508))
     print(np.exp(-200))
 
+    print('*' * 50)
+    # 测试 data.max
+    data = torch.Tensor([[0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                         [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]])
+    time_preds = data[:, 0:3].data.max(1, keepdim=True)[1]
+    device_preds = data[:, 3:].data.max(1, keepdim=True)[1]
+    print(time_preds)
+    print(device_preds)
+
+    print('*' * 50)
+    # 测试 eq
+    data2 = torch.Tensor([[0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+                          [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]])
+    time_preds_2 = data2[:, 0:3].data.max(1, keepdim=True)[1]
+    device_preds_2 = data2[:, 3:].data.max(1, keepdim=True)[1]
+    print(time_preds_2)
+    print(device_preds_2)
+    time_result = time_preds_2.eq(time_preds)
+    device_result = device_preds_2.eq(device_preds)
+    print(time_result)
+    print(device_result)
+    print(time_result * device_result)
