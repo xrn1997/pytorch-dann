@@ -1,6 +1,8 @@
 """
 Test the model with target domain
 """
+import os
+
 import torch
 from torch.autograd import Variable
 import numpy as np
@@ -31,6 +33,19 @@ def test(feature_extractor,
 
     position_correct = 0.0
     domain_correct = 0.0
+    # 加载已保存的参数
+    if not os.path.exists(params.save_dir):
+        os.mkdir(params.save_dir)
+    if not os.path.exists(params.train_params_save_path):
+        os.mkdir(params.train_params_save_path)
+    if os.path.exists(params.train_params_save_path + "/fe.pth"):
+        feature_extractor.load_state_dict(torch.load(params.train_params_save_path + "/fe.pth"))
+    if os.path.exists(params.train_params_save_path + "/dc.pth"):
+        domain_classifier.load_state_dict(torch.load(params.train_params_save_path + "/dc.pth"))
+    if os.path.exists(params.train_params_save_path + "/lp1.pth"):
+        label_predictor_1.load_state_dict(torch.load(params.train_params_save_path + "/lp1.pth"))
+        label_predictor_2.load_state_dict(torch.load(params.train_params_save_path + "/lp2.pth"))
+        label_predictor_3.load_state_dict(torch.load(params.train_params_save_path + "/lp3.pth"))
 
     for batch_idx, s_data in enumerate(source_dataloader):
         # setup hyper_parameters
