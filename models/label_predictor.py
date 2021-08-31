@@ -15,7 +15,8 @@ class M1(nn.Module):
         self.avg_pool = mb.AvgPooling(num_feature=64)
         self.bn = nn.BatchNorm2d(32)
         self.soft_max = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(int(ap_len * ap_len/16), position_size)
+        temp = int(ap_len/16) * int(ap_len/16) * 64
+        self.fc = nn.Linear(temp, position_size)
 
     def forward(self, x):
         batch_size = x.size(0)
@@ -45,7 +46,8 @@ class M2(nn.Module):
         self.avg_pool = mb.AvgPooling(num_feature=64)
         self.bn = nn.BatchNorm2d(32)
         self.soft_max = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(int(ap_len * ap_len/16), position_size)
+        temp = int(ap_len/16) * int(ap_len/16) * 64
+        self.fc = nn.Linear(temp, position_size)
 
     def forward(self, x):
         batch_size = x.size(0)
@@ -75,7 +77,8 @@ class M3(nn.Module):
         self.avg_pool = mb.AvgPooling(num_feature=64)
         self.bn = nn.BatchNorm2d(32)
         self.soft_max = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(int(ap_len * ap_len/16), position_size)
+        temp = int(ap_len / 16) * int(ap_len / 16) * 64
+        self.fc = nn.Linear(temp, position_size)
 
     def forward(self, x):
         batch_size = x.size(0)

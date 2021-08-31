@@ -135,3 +135,8 @@ if __name__ == '__main__':
     print(time_result)
     print(device_result)
     print(time_result * device_result)
+
+    print('*' * 50)
+    # 测试 除法
+    a = 520/16
+    print(int(a)*int(a)*64)

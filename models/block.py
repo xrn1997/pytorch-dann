@@ -52,7 +52,7 @@ class AvgPooling(nn.Module):
 
     def __init__(self, num_feature):
         super(AvgPooling, self).__init__()
-        self.avg_pool = nn.AvgPool2d(kernel_size=(8, 8))
+        self.avg_pool = nn.AvgPool2d(kernel_size=(4, 4))
         self.bn = nn.BatchNorm2d(num_feature)
         self.leaky_relu = nn.LeakyReLU(negative_slope=0.1)
 

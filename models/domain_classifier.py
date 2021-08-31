@@ -16,7 +16,8 @@ class MD(nn.Module):
         self.avg_pool = mb.AvgPooling(num_feature=64)
         self.bn = nn.BatchNorm2d(32)
         self.soft_max = nn.LogSoftmax(dim=1)
-        self.fc = nn.Linear(int(ap_len * ap_len / 16), domain_size)
+        temp = int(ap_len / 16) * int(ap_len / 16) * 64
+        self.fc = nn.Linear(temp, domain_size)
 
     def forward(self, x, constant):
         batch_size = x.size(0)
