@@ -28,9 +28,7 @@ def main():
     label_predictor_1 = models.M1(ap_len, position_size)
     para = sum([np.prod(list(p.size())) for p in label_predictor_1.parameters()])
     print('Model {} : params: {:4f}M'.format("label_predictor_1", para / 500 / 500))
-
     label_predictor_2 = models.M2(ap_len, position_size)
-
     label_predictor_3 = models.M3(ap_len, position_size)
 
     domain_classifier = models.MD(ap_len, domain_size)
@@ -41,9 +39,11 @@ def main():
     label_predictor_2.to(device)
     label_predictor_3.to(device)
     domain_classifier.to(device)
+
     # init criterions 损失函数
     label_criterion = nn.NLLLoss()
     domain_criterion = models.OneHotNLLLoss()
+    location_criterion = nn.NLLLoss()
 
     # init optimizer 优化器
     optimizer = torch.optim.SGD([{'params': feature_extractor.parameters()},
@@ -60,7 +60,7 @@ def main():
         train.train(feature_extractor,  # 特征提取
                     label_predictor_1, label_predictor_2, label_predictor_3,  # 标签预测
                     domain_classifier,  # 域鉴别
-                    label_criterion, domain_criterion,  # 损失
+                    label_criterion, domain_criterion,location_criterion,  # 损失
                     train_dataloader,  # dataloader
                     optimizer,  # 优化器
                     epoch  # 轮数`

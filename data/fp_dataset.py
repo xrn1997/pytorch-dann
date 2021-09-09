@@ -19,8 +19,8 @@ class UJIndoorLocDataSet(Dataset):
         self._data_len = all_data.shape[0]  # RSS指纹数量
         self.ap_len = all_data.shape[1] - 9  # AP数量 520
         self._rss = torch.from_numpy(all_data[:, :-9])  # RSS 520维向量
-        self._co_data = all_data[:, -9:-7]  # 经度、纬度
-        self._space = all_data[:, -7:-3]  # 楼层 、楼、房间、相对位置（门内1、门外2）
+        self._co_data = all_data[:, -9:-6]  # 经度、纬度、楼层
+        self._space = all_data[:, -6:-3]  # 楼、房间、相对位置（门内1、门外2）
         self._collector = all_data[:, -3:-1]  # 用户、手机
         self._date = all_data[:, -1:].reshape(self._data_len)  # 时间戳，如：1371713733
 
@@ -31,7 +31,7 @@ class UJIndoorLocDataSet(Dataset):
             co_dic = {}  # 字典
         self._co_label = []  # 标签
         co_idx = 0  # 索引
-        for c in all_data[:, -9:-5]:
+        for c in self._co_data:
             temp = c.tolist()
             if temp not in co_dic.values():
                 co_dic[co_idx] = temp
@@ -80,11 +80,14 @@ if __name__ == '__main__':
     np.set_printoptions(threshold=np.inf)  # threshold 指定超过多少使用省略号，np.inf代表无限大
     dataset = UJIndoorLocDataSet(uj_indoor_loc_path, train=True)
     dataloader = DataLoader(dataset=dataset,
-                            batch_size=1,
+                            batch_size=2,
                             num_workers=3,
                             pin_memory=True)
     print("ap_len", dataset.ap_len)
     print("co_size", dataset.co_size)
     print("domain_size", dataset.domain_size)
     for data in dataloader:
+        data[1] *= torch.tensor([1, 1, 3])  # 假定每层楼高3米
+        print(data[2])
+        # coordinate = data[1] - data[1][data[2]]
         break

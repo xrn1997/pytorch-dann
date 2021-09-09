@@ -11,7 +11,7 @@ import numpy as np
 def train(feature_extractor,
           label_predictor_1, label_predictor_2, label_predictor_3,
           domain_classifier,
-          label_criterion, domain_criterion,
+          label_criterion, domain_criterion, location_criterion,
           source_dataloader,
           optimizer,
           epoch
@@ -26,6 +26,7 @@ def train(feature_extractor,
     :param domain_classifier: 域鉴别器
     :param label_criterion: 标签预测损失函数
     :param domain_criterion: 域损失函数
+    :param location_criterion:位置损失函数（空间约束）
     :param source_dataloader: 源域数据
     :param optimizer: 优化器
     :param epoch: 训练轮数
@@ -87,7 +88,12 @@ def train(feature_extractor,
         src_preds = domain_classifier(src_feature, constant)
         domain_loss = domain_criterion(src_preds, domain_label)
 
+        # 计算距离损失
+        # location_loss = location_criterion(-source_position)
+
+        # 总损失
         loss = class_loss + params.theta * domain_loss
+        # loss = class_loss + params.theta * domain_loss + params.beta * location_loss
         loss.backward()
         optimizer.step()
 
@@ -100,7 +106,7 @@ def train(feature_extractor,
                 loss.item(),
                 class_loss.item(),
                 domain_loss.item()
-                ))
+            ))
 
     torch.save(feature_extractor.state_dict(), params.train_params_save_path + "/fe.pth")
     torch.save(domain_classifier.state_dict(), params.train_params_save_path + "/dc.pth")
