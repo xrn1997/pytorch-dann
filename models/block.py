@@ -9,10 +9,11 @@ class ConvBlock(nn.Module):
                                padding=padding, bias=True)
         self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size,
                                padding=padding, bias=True)
+        self.leaky_relu = nn.LeakyReLU(negative_slope=0.1)
 
     def forward(self, x):
-        x = self.conv1(x)
-        x = self.conv2(x)
+        x = self.leaky_relu(self.conv1(x))
+        x = self.leaky_relu(self.conv2(x))
         return x
 
 
@@ -24,11 +25,12 @@ class ResidualBlock(nn.Module):
                                padding=padding, bias=True)
         self.conv2 = nn.Conv2d(in_channels=out_channels, out_channels=out_channels, kernel_size=kernel_size,
                                padding=padding, bias=True)
+        self.leaky_relu = nn.LeakyReLU(negative_slope=0.1)
 
     def forward(self, x):
-        x = self.conv1(x)
+        x = self.leaky_relu(self.conv1(x))
         y = self.conv2(x)
-        return x + y
+        return self.leaky_relu(x + y)
 
 
 class MaxPooling(nn.Module):

@@ -4,7 +4,7 @@ dataset_std = [0.5]  # 标准差
 learning_rate = 0.1  # 学习率
 batch_size = 2  # batch块大小
 epochs = 200  # 训练轮数
-gamma = 50  # γ
+gamma = 10  # γ
 theta = 0.3  # θ
 beta = 0.5  # β
 # path params
