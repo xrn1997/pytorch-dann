@@ -102,7 +102,6 @@ def get_test_loader(dataset):
 
         data = datasets.MNIST(root=params.mnist_path, train=False, transform=transform,
                               download=True)
-
         dataloader = DataLoader(dataset=data,
                                 batch_size=params.batch_size,
                                 shuffle=True,
